@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from "next/image";
-import { 
-  Menu, 
-  X, 
-  User, 
-  TrendingUp, 
-  Target, 
-  Map, 
+import {
+  Menu,
+  X,
+  User,
+  TrendingUp,
+  Target,
+  Map,
   Home,
   Settings,
   LogOut,
@@ -72,7 +72,8 @@ export default function Header(props) {
         break;
       case 'logout':
         // Add logout logic here
-        console.log('Logging out...');
+        localStorage.removeItem('accessToken');
+        router.push('/');
         break;
     }
   };
@@ -84,7 +85,7 @@ export default function Header(props) {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="relative w-[120px] h-10 overflow-hidden">
-              <Image 
+              <Image
                 src="/logo.png"
                 alt="Growgle Logo"
                 fill
@@ -132,8 +133,8 @@ export default function Header(props) {
                   onClick={() => setUserMenuOpen((s) => !s)}
                   className={cn(
                     "inline-flex items-center justify-center p-2 rounded-lg transition-all duration-200",
-                    userMenuOpen 
-                      ? "bg-blue-50 text-blue-600 shadow-sm" 
+                    userMenuOpen
+                      ? "bg-blue-50 text-blue-600 shadow-sm"
                       : "hover:bg-gray-100 text-gray-600"
                   )}
                 >
@@ -150,7 +151,7 @@ export default function Header(props) {
                   Sign In
                 </button>
               )}
-              
+
               {/* Improved Dropdown */}
               <AnimatePresence>
                 {userMenuOpen && (
@@ -173,7 +174,7 @@ export default function Header(props) {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Menu Items */}
                     <nav className="py-2">
                       <button
@@ -183,7 +184,7 @@ export default function Header(props) {
                         <User className="h-4 w-4 mr-3 text-gray-400" />
                         <span>View Profile</span>
                       </button>
-                      
+
                       <button
                         onClick={() => handleUserMenuClick('settings')}
                         className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
@@ -191,9 +192,9 @@ export default function Header(props) {
                         <Settings className="h-4 w-4 mr-3 text-gray-400" />
                         <span>Settings</span>
                       </button>
-                      
+
                       <hr className="my-2 border-gray-100" />
-                      
+
                       <button
                         onClick={() => handleUserMenuClick('logout')}
                         className="w-full flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
@@ -206,7 +207,7 @@ export default function Header(props) {
                 )}
               </AnimatePresence>
             </div>
-            
+
             {/* Mobile menu button */}
             <Button
               variant="ghost"
@@ -253,7 +254,7 @@ export default function Header(props) {
                     </Link>
                   );
                 })}
-                
+
                 {/* Mobile User Menu */}
                 <div className="border-t border-gray-200 pt-2 mt-2">
                   <Link
@@ -264,7 +265,7 @@ export default function Header(props) {
                     <User className="h-4 w-4 mr-2" />
                     <span>Profile</span>
                   </Link>
-                  
+
                   <Link
                     href="/settings"
                     className="w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
@@ -273,12 +274,12 @@ export default function Header(props) {
                     <Settings className="h-4 w-4 mr-2" />
                     <span>Settings</span>
                   </Link>
-                  
+
                   <button
                     onClick={() => {
                       setIsOpen(false);
-                      // Add logout logic here
-                      console.log('Logging out...');
+                      localStorage.removeItem('accessToken');
+                      router.push('/');
                     }}
                     className="w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
