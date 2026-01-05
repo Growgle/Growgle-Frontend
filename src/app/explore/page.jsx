@@ -1001,15 +1001,11 @@ export default function ChatPage() {
       const textToSend = wasTranslated ? translatedText : promptText;
 
       if (mode === "explore") {
-        const profileContext = {};
+        let profileContext = {};
         try {
           const userProfile = await getUserProfile();
           if (userProfile) {
-            profileContext.skills = userProfile.skills;
-            profileContext.role = userProfile.role;
-            profileContext.experience = userProfile.experience;
-            profileContext.interests = userProfile.interests;
-            profileContext.location = userProfile.location;
+            profileContext = userProfile.data.data;
           }
         } catch (profileErr) {
           console.warn("Could not fetch user profile:", profileErr);
