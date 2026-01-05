@@ -44,3 +44,5 @@ export const createRoadmap = ({
   });
 
 export const getRoadmapById = (id) => apiClient.get(`/roadmaps/${id}`);
+
+export const updateRoadmap = (id, data) => apiClient.patch(`/roadmaps/${id}`, data);

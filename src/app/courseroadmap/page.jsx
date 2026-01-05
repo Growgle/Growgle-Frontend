@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, Suspense } from "react";
+import React, { useEffect, useMemo, useState, useRef, useCallback, Suspense } from "react";
 import AuthGuard from "@/components/AuthGuard";
 import { motion } from "framer-motion";
 import {
@@ -15,6 +15,8 @@ import {
   Calendar,
   Target,
   TrendingUp,
+  Square,
+  Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -25,7 +27,7 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import { useSearchParams, useRouter } from "next/navigation";
-import { getRoadmapById } from "@/lib/services/roadmapApi";
+import { getRoadmapById, updateRoadmap } from "@/lib/services/roadmapApi";
 
 const certifications = [
   {
@@ -63,6 +65,137 @@ function RoadmapContent() {
   const router = useRouter();
 
   const roadmapId = searchParams.get("pageId");
+
+  // Timer state management
+  const [activeTimer, setActiveTimer] = useState(null); // { milestoneId, phaseId, startTime } of active timer
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerInterval = useRef(null);
+
+  // Format seconds to HH:MM:SS
+  const formatTime = useCallback((totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    }
+    return `${seconds}s`;
+  }, []);
+
+  // Format total time for display (converts to days/hours/minutes)
+  const formatTotalTime = useCallback((totalSeconds) => {
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    if (days > 0) {
+      return `${days}d ${hours}h ${minutes}m`;
+    } else if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m`;
+    }
+    return `< 1m`;
+  }, []);
+
+  // Start timer for a milestone
+  const startTimer = useCallback((milestoneId, phaseId) => {
+    // Clear any existing timer
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
+    }
+
+    const startTime = new Date().toISOString();
+    setActiveTimer({ milestoneId, phaseId, startTime });
+    setElapsedSeconds(0);
+
+    timerInterval.current = setInterval(() => {
+      setElapsedSeconds(prev => prev + 1);
+    }, 1000);
+  }, []);
+
+  // Stop timer, update progress, and persist to backend
+  const stopTimer = useCallback(async () => {
+    if (!activeTimer || !roadmap) return;
+
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
+      timerInterval.current = null;
+    }
+
+    const { milestoneId, phaseId, startTime } = activeTimer;
+    const endTime = new Date().toISOString();
+    const timeSpent = elapsedSeconds;
+
+    // Update roadmap state with progress
+    const updatedPhases = roadmap.phases.map((phase) => {
+      if (phase.id !== phaseId) return phase;
+
+      const updatedMilestones = phase.milestones.map((milestone) => {
+        if (milestone.id !== milestoneId) return milestone;
+        return {
+          ...milestone,
+          status: 'completed',
+          progress: 100,
+          startTime: milestone.startTime || startTime,
+          endTime,
+          timeSpent: (milestone.timeSpent || 0) + timeSpent,
+        };
+      });
+
+      // Calculate phase progress as average of milestone progress
+      const phaseProgress = updatedMilestones.length > 0
+        ? Math.round(updatedMilestones.reduce((sum, m) => sum + (m.progress || 0), 0) / updatedMilestones.length)
+        : 0;
+
+      return {
+        ...phase,
+        milestones: updatedMilestones,
+        progress: phaseProgress,
+        status: phaseProgress === 100 ? 'completed' : phaseProgress > 0 ? 'in-progress' : 'pending',
+      };
+    });
+
+    // Calculate overall progress as average of phase progress
+    const overallProgress = updatedPhases.length > 0
+      ? Math.round(updatedPhases.reduce((sum, p) => sum + (p.progress || 0), 0) / updatedPhases.length)
+      : 0;
+
+    const updatedRoadmap = {
+      ...roadmap,
+      phases: updatedPhases,
+      progress: overallProgress,
+      completionRate: overallProgress,
+    };
+
+    // Update local state
+    setRoadmap(updatedRoadmap);
+    setActiveTimer(null);
+    setElapsedSeconds(0);
+
+    // Persist to backend
+    try {
+      await updateRoadmap(roadmapId, {
+        phases: updatedPhases,
+        progress: overallProgress,
+        completionRate: overallProgress,
+      });
+    } catch (err) {
+      console.error('Failed to update roadmap:', err);
+    }
+  }, [activeTimer, roadmap, roadmapId, elapsedSeconds]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchRoadmap = async () => {
@@ -201,13 +334,12 @@ function RoadmapContent() {
                       {(roadmap?.phases ?? []).map((phase, index) => (
                         <div key={phase.id} className="text-center">
                           <div
-                            className={`w-3 h-3 rounded-full mx-auto mb-2 ${
-                              phase.status === "completed"
-                                ? "bg-green-600"
-                                : phase.status === "in-progress"
+                            className={`w-3 h-3 rounded-full mx-auto mb-2 ${phase.status === "completed"
+                              ? "bg-green-600"
+                              : phase.status === "in-progress"
                                 ? "bg-blue-600"
                                 : "bg-grey-300"
-                            }`}
+                              }`}
                           />
                           <div className="text-xs font-medium text-grey-900">
                             {phase.title}
@@ -234,13 +366,12 @@ function RoadmapContent() {
                     {(roadmap?.phases ?? []).map((phase, phaseIndex) => (
                       <Card key={phase.id} className="overflow-hidden">
                         <CardHeader
-                          className={`cursor-pointer ${
-                            phase.status === "completed"
-                              ? "bg-green-50"
-                              : phase.status === "in-progress"
+                          className={`cursor-pointer ${phase.status === "completed"
+                            ? "bg-green-50"
+                            : phase.status === "in-progress"
                               ? "bg-blue-50"
                               : "bg-grey-50"
-                          }`}
+                            }`}
                           onClick={() =>
                             setSelectedPhase(
                               selectedPhase === phase.id ? null : phase.id
@@ -275,13 +406,12 @@ function RoadmapContent() {
                           {phase.progress > 0 && (
                             <div className="w-full bg-grey-200 rounded-full h-2 mt-3">
                               <motion.div
-                                className={`h-2 rounded-full ${
-                                  phase.status === "completed"
-                                    ? "bg-green-600"
-                                    : phase.status === "in-progress"
+                                className={`h-2 rounded-full ${phase.status === "completed"
+                                  ? "bg-green-600"
+                                  : phase.status === "in-progress"
                                     ? "bg-blue-600"
                                     : "bg-grey-400"
-                                }`}
+                                  }`}
                                 initial={{ width: 0 }}
                                 animate={{ width: `${phase.progress}%` }}
                                 transition={{
@@ -323,13 +453,53 @@ function RoadmapContent() {
                                         </div>
                                       </div>
                                     </div>
-                                    <Button variant="outlined" size="sm">
-                                      {milestone.status === "completed"
-                                        ? "Review"
-                                        : milestone.status === "in-progress"
-                                        ? "Continue"
-                                        : "Start"}
-                                    </Button>
+                                    <div className="flex items-center space-x-2">
+                                      {/* Show time spent for this milestone if any */}
+                                      {milestone.timeSpent > 0 && activeTimer?.milestoneId !== milestone.id && (
+                                        <div className="text-xs text-grey-500 bg-grey-100 px-2 py-1 rounded">
+                                          ⏱️ {formatTotalTime(milestone.timeSpent)}
+                                        </div>
+                                      )}
+
+                                      {activeTimer?.milestoneId === milestone.id ? (
+                                        /* Timer is running for this milestone */
+                                        <div className="flex items-center space-x-2">
+                                          <div className="flex items-center bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg font-mono text-sm font-medium">
+                                            <Clock className="h-4 w-4 mr-2 animate-pulse" />
+                                            {formatTime(elapsedSeconds)}
+                                          </div>
+                                          <Button
+                                            variant="outlined"
+                                            size="sm"
+                                            className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+                                            onClick={() => stopTimer()}
+                                          >
+                                            <Square className="h-4 w-4 mr-1 fill-current" />
+                                            Stop
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        /* No timer running - show Start/Continue/Review button */
+                                        <Button
+                                          variant="outlined"
+                                          size="sm"
+                                          onClick={() => {
+                                            if (milestone.status !== "completed") {
+                                              startTimer(milestone.id, phase.id);
+                                            }
+                                          }}
+                                        >
+                                          {milestone.status === "completed" ? (
+                                            "Review"
+                                          ) : (
+                                            <>
+                                              <Play className="h-4 w-4 mr-1" />
+                                              {milestone.status === "in-progress" ? "Continue" : "Start"}
+                                            </>
+                                          )}
+                                        </Button>
+                                      )}
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -414,11 +584,10 @@ function RoadmapContent() {
                                   {cert.duration}
                                 </span>
                                 <span
-                                  className={`px-2 py-1 rounded-full ${
-                                    cert.priority === "Recommended"
-                                      ? "bg-green-100 text-green-700"
-                                      : "bg-grey-100 text-grey-700"
-                                  }`}
+                                  className={`px-2 py-1 rounded-full ${cert.priority === "Recommended"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-grey-100 text-grey-700"
+                                    }`}
                                 >
                                   {cert.priority}
                                 </span>
