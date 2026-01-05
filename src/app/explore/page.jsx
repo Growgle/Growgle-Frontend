@@ -612,7 +612,7 @@ function MessageBubble({ m, onSpeakMessage, setTyping }) {
   // Only enable typewriter effect for newly generated AI messages
   const shouldType = isAI && m.isNew === true;
   const typedText = useTypewriter(m.text, {
-    speed: 70,
+    speed: 15,
     enabled: shouldType,
     onTypingState: setTyping,
   });
