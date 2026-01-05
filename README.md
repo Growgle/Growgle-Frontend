@@ -69,14 +69,15 @@ npm run lint         # Run ESLint
 ```
 
 ## 🧭 User Flow
+<img width="1275" height="747" alt="image" src="https://github.com/user-attachments/assets/729f43d3-fa3e-46e7-82ec-5e443196c74e" />
 
-<img width="2146" height="1112" alt="Gen AI UserFlow" src="https://github.com/user-attachments/assets/fef37800-272c-4167-9d73-c85907f32f41" />
+
 
 ---
 
 ## 🏗 Architecture Overview
 
-<img width="1865" height="1448" alt="Gen AI Architecture" src="https://github.com/user-attachments/assets/8a5ff45c-e4c4-4da4-9507-a03730709ad0" />
+<img width="1408" height="1080" alt="image" src="https://github.com/user-attachments/assets/4910fc5f-29fc-4c8f-803a-874fb060f807" />
 
 ---
 
@@ -84,10 +85,10 @@ npm run lint         # Run ESLint
 
 | Repository | Description |
 | --- | --- |
-| [genai_geodata](https://github.com/akshayks13/genai_geodata) | A Flask microservice that queries BigQuery, enriches results with Vertex AI/Gemma embeddings, and returns Gemini-powered contextual answers for geo and region-aware insights. |
-| [genai_career_insights](https://github.com/akshayks13/genai_career_insights) | Modular Express.js ETL and analytics service that ingests news and job feeds into BigQuery and uses Vertex AI/Gemini to produce AI-curated career recommendations. |
-| [Gen_AI_Exchange (backend/auth)](https://github.com/Raamprathap/Gen_AI_Exchange) | Firebase-backed authentication and lightweight API layer for user identity, token refresh, and session management across Growgle services. |
-| [gemini-Computer-Use](https://github.com/akshayks13/gemini-Computer-Use) | Python agent suite using Gemini Computer + Playwright to control Chromium via vision+action for automating tasks like filling job applications and complex web interactions. |
+| [genai_geodata](https://github.com/Santhosh292k/Growgle-GeoAI) | A Flask microservice that queries BigQuery, enriches results with Vertex AI/Gemma embeddings, and returns Gemini-powered contextual answers for geo and region-aware insights. |
+| [genai_career_insights](https://github.com/akshayks13/Growgle-CareerPulse) | Modular Express.js ETL and analytics service that ingests news and job feeds into BigQuery and uses Vertex AI/Gemini to produce AI-curated career recommendations. |
+| [Gen_AI_Exchange (backend/auth)](https://github.com/Raamprathap/Growgle-Backend) | Firebase-backed authentication and lightweight API layer for user identity, token refresh, and session management across Growgle services. |
+| [gemini-Computer-Use](https://github.com/Raamprathap/Growgle-AutoApply) | Python agent suite using Gemini Computer + Playwright to control Chromium via vision+action for automating tasks like filling job applications and complex web interactions. |
 
 ## Team
 
