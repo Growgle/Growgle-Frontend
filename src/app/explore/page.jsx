@@ -612,7 +612,7 @@ function MessageBubble({ m, onSpeakMessage, setTyping }) {
   // Only enable typewriter effect for newly generated AI messages
   const shouldType = isAI && m.isNew === true;
   const typedText = useTypewriter(m.text, {
-    speed: 30,
+    speed: 15,
     enabled: shouldType,
     onTypingState: setTyping,
   });
@@ -941,15 +941,22 @@ export default function ChatPage() {
     });
   };
 
+  // Track which session is currently loading
+  const [loadingSessionId, setLoadingSessionId] = useState(null);
+
   const ask = async (customPrompt = null) => {
     const promptText = customPrompt || input;
     if (!promptText && !filePreview) return;
 
-    let activeSessionId = currentSessionId;
-    if (!activeSessionId) {
-      activeSessionId = Date.now().toString();
-      setCurrentSessionId(activeSessionId);
+    // Capture the session ID at the start of the request
+    let requestSessionId = currentSessionId;
+    if (!requestSessionId) {
+      requestSessionId = Date.now().toString();
+      setCurrentSessionId(requestSessionId);
     }
+
+    // Store the current mode for this request
+    const requestMode = mode;
 
     setInput("");
     setFilePreview(null);
@@ -984,23 +991,26 @@ export default function ChatPage() {
       translatedText: wasTranslated ? translatedText : null,  // English translation
       detectedLanguage: wasTranslated ? detectedLanguage : null,
       files: filePreview ? [filePreview] : [],
-      mode,
+      mode: requestMode,
     };
 
+    // Set loading state with session ID to track which session is loading
     setAiLoading(true);
+    setLoadingSessionId(requestSessionId);
 
-    let workingMessages = [];
+    // Capture the messages at the time of the request
+    let messagesAtRequest = [];
     setMessages((prev) => {
-      workingMessages = [...prev, userMsg];
-      return workingMessages;
+      messagesAtRequest = [...prev, userMsg];
+      return messagesAtRequest;
     });
 
     let aiText = "";
     try {
-      // Use the translated text for API calls
-      const textToSend = wasTranslated ? translatedText : promptText;
+      // Send the original text (not translated) to the backend
+      const textToSend = promptText;
 
-      if (mode === "explore") {
+      if (requestMode === "explore") {
         let profileContext = {};
         try {
           const userProfile = await getUserProfile();
@@ -1025,7 +1035,14 @@ export default function ChatPage() {
         ? `Error: ${e.response.data.error}`
         : "Error processing request";
     } finally {
-      setAiLoading(false);
+      // Only clear loading state if we're still on the same session
+      setLoadingSessionId((currentLoadingId) => {
+        if (currentLoadingId === requestSessionId) {
+          setAiLoading(false);
+          return null;
+        }
+        return currentLoadingId;
+      });
     }
 
     // If user message was translated, translate AI response back to user's language
@@ -1049,10 +1066,18 @@ export default function ChatPage() {
       isNew: true  // Flag to enable typing effect only for new messages
     };
 
-    setMessages((prev) => {
-      const newMessages = [...prev, aiMsg];
-      persistSession(activeSessionId, newMessages);
-      return newMessages;
+    // Build the complete messages for the session where request originated
+    const newMessagesForSession = [...messagesAtRequest, aiMsg];
+
+    // Persist to the correct session (the one where request was made)
+    persistSession(requestSessionId, newMessagesForSession);
+
+    // Only update the UI messages if we're still viewing the same session
+    setCurrentSessionId((currentViewingSession) => {
+      if (currentViewingSession === requestSessionId) {
+        setMessages(newMessagesForSession);
+      }
+      return currentViewingSession;
     });
   };
 
@@ -1115,6 +1140,13 @@ export default function ChatPage() {
       setInput("");
       setFilePreview(null);
       setDetectedLang(null);
+      // Reset loading/typing states when switching sessions
+      // This prevents "AI is thinking" from appearing in the wrong chat
+      // Only clear aiLoading if we're leaving the session that has the active request
+      if (loadingSessionId !== sessionId) {
+        setAiLoading(false);
+      }
+      setTyping(false);
     }
   };
 
@@ -1214,7 +1246,7 @@ export default function ChatPage() {
                     />
                   ))}
 
-                  {aiLoading && (
+                  {aiLoading && loadingSessionId === currentSessionId && (
                     <div className="flex mb-4">
                       <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-md shadow-md p-4">
                         <div className="flex items-center gap-3">
