@@ -1007,8 +1007,8 @@ export default function ChatPage() {
 
     let aiText = "";
     try {
-      // Use the translated text for API calls
-      const textToSend = wasTranslated ? translatedText : promptText;
+      // Send the original text (not translated) to the backend
+      const textToSend = promptText;
 
       if (requestMode === "explore") {
         let profileContext = {};
