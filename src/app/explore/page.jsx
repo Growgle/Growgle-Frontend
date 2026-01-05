@@ -612,7 +612,7 @@ function MessageBubble({ m, onSpeakMessage, setTyping }) {
   // Only enable typewriter effect for newly generated AI messages
   const shouldType = isAI && m.isNew === true;
   const typedText = useTypewriter(m.text, {
-    speed: 30,
+    speed: 70,
     enabled: shouldType,
     onTypingState: setTyping,
   });
@@ -1115,6 +1115,10 @@ export default function ChatPage() {
       setInput("");
       setFilePreview(null);
       setDetectedLang(null);
+      // Reset loading/typing states when switching sessions
+      // This prevents "AI is thinking" from appearing in the wrong chat
+      setAiLoading(false);
+      setTyping(false);
     }
   };
 
