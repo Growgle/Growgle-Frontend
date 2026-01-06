@@ -52,6 +52,7 @@ import {
 import { sendExplore, sendPrompt } from "@/lib/services/exploreApi";
 import { getUserProfile } from "@/lib/services/profileApi";
 import { translateToEnglish, detectLanguage } from "@/lib/services/translateApi";
+import { getChatSessions, getChatSession, createChatSession, updateChatSession, deleteChatSession as apiDeleteChatSession } from "@/lib/services/chatApi";
 import AuthGuard from "@/components/AuthGuard";
 
 function useTypewriter(
@@ -846,29 +847,27 @@ export default function ChatPage() {
   }, [mode, messages.length]);
 
   useEffect(() => {
-    const sampleSessions = [
-      {
-        id: "1",
-        title: "Data Structures Interview Prep",
-        mode: "interview",
-        date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        messageCount: 8,
-        preview: "Can you give me a mock technical interview question...",
-        lastMessage:
-          "Great practice! Focus on explaining your thought process clearly.",
-        messages: [
-          {
-            role: "user",
-            text: "Can you give me a mock technical interview question?",
-          },
-          {
-            role: "ai",
-            text: "Certainly! Let's begin. Here's your first question: Describe a time you faced a significant technical challenge...",
-          },
-        ],
-      },
-    ];
-    setChatSessions(sampleSessions);
+    const fetchSessions = async () => {
+      try {
+        console.log('Fetching chat sessions...');
+        const response = await getChatSessions();
+        console.log('Chat sessions response:', response);
+        if (response.success && Array.isArray(response.data)) {
+          // Transform date strings back to Date objects for display
+          const sessions = response.data.map(session => ({
+            ...session,
+            date: new Date(session.updatedAt || session.createdAt),
+          }));
+          console.log('Setting chat sessions:', sessions.length);
+          setChatSessions(sessions);
+        }
+      } catch (error) {
+        console.error('Error fetching chat sessions:', error);
+        // Start with empty sessions on error
+        setChatSessions([]);
+      }
+    };
+    fetchSessions();
   }, []);
 
   useEffect(() => {
@@ -1081,7 +1080,7 @@ export default function ChatPage() {
     });
   };
 
-  const persistSession = (sessionId, newMessages) => {
+  const persistSession = async (sessionId, newMessages) => {
     if (!sessionId || newMessages.length === 0) return;
     const firstUserMsg = newMessages.find((m) => m.role === "user");
     const lastAiMsg = [...newMessages].reverse().find((m) => m.role === "ai");
@@ -1095,24 +1094,50 @@ export default function ChatPage() {
       return rest;
     });
     const sessionData = {
-      id: sessionId,
       title,
       mode,
-      date: new Date(),
-      messageCount: cleanMessages.length,
+      messages: cleanMessages,
       preview: firstUserMsg?.text || "",
       lastMessage: lastAiMsg?.text || "",
-      messages: cleanMessages,
     };
+
+    // Update local state immediately for responsive UI
     setChatSessions((prev) => {
-      const existingIndex = prev.findIndex((s) => s.id === sessionId);
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = sessionData;
-        return updated;
+      const existingSession = prev.find((s) => s.id === sessionId);
+      const updatedSessionData = {
+        id: sessionId,
+        ...sessionData,
+        date: new Date(),
+        messageCount: cleanMessages.length,
+      };
+      if (existingSession) {
+        return prev.map((s) => s.id === sessionId ? updatedSessionData : s);
       }
-      return [sessionData, ...prev];
+      return [updatedSessionData, ...prev];
     });
+
+    // Persist to database in the background
+    try {
+      const existingSession = chatSessions.find((s) => s.id === sessionId);
+      if (existingSession) {
+        // Update existing session
+        await updateChatSession(sessionId, sessionData);
+      } else {
+        // Create new session
+        const response = await createChatSession(sessionData);
+        if (response.success && response.data?.id) {
+          // Update the local session with the real database ID
+          const dbId = response.data.id;
+          setCurrentSessionId(dbId);
+          setChatSessions((prev) =>
+            prev.map((s) => s.id === sessionId ? { ...s, id: dbId } : s)
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error persisting chat session:', error);
+      // Session is still in local state, will try again on next message
+    }
   };
 
   const createNewSession = () => {
@@ -1150,10 +1175,19 @@ export default function ChatPage() {
     }
   };
 
-  const deleteSession = (sessionId) => {
+  const deleteSession = async (sessionId) => {
+    // Update local state immediately for responsive UI
     setChatSessions((prev) => prev.filter((s) => s.id !== sessionId));
     if (currentSessionId === sessionId) {
       createNewSession();
+    }
+
+    // Delete from database in the background
+    try {
+      await apiDeleteChatSession(sessionId);
+    } catch (error) {
+      console.error('Error deleting chat session:', error);
+      // Session is already removed from UI, don't add it back
     }
   };
 
