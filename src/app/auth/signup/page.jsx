@@ -515,204 +515,245 @@ export default function SignupPage() {
             transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
             className="relative"
           >
-            <svg width="400" height="400" viewBox="0 0 400 400" fill="none" className="drop-shadow-2xl">
-              {/* Background Circle */}
+            <svg width="420" height="420" viewBox="0 0 420 420" fill="none" className="drop-shadow-2xl">
+              {/* Soft Background Glow */}
               <motion.circle
-                cx="200"
-                cy="200"
-                r="150"
-                fill="url(#bgGradientSignup)"
-                opacity="0.15"
-                animate={{ scale: [1, 1.08, 1] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                cx="210"
+                cy="210"
+                r="180"
+                fill="url(#growthBgGlow)"
+                opacity="0.12"
+                animate={{ scale: [1, 1.04, 1] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               />
 
-              {/* Floating Abstract Shapes */}
-              <motion.circle
-                cx="80"
-                cy="100"
-                r="20"
-                fill="#10B981"
-                opacity="0.5"
-                animate={{ y: [0, -15, 0], scale: [1, 1.1, 1] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <motion.rect
-                x="310"
-                y="90"
-                width="35"
-                height="35"
-                rx="8"
-                fill="#14B8A6"
-                opacity="0.5"
-                animate={{ rotate: [0, 45, 0], y: [0, -10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <motion.polygon
-                points="340,260 360,300 320,300"
-                fill="#059669"
-                opacity="0.4"
-                animate={{ rotate: [0, -180, -360] }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                style={{ transformOrigin: "340px 280px" }}
-              />
-              <motion.circle
-                cx="60"
-                cy="280"
-                r="15"
-                fill="#6EE7B7"
-                opacity="0.6"
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
+              {/* Ground/Soil */}
+              <ellipse cx="210" cy="365" rx="150" ry="20" fill="#92400E" opacity="0.3" />
+              <ellipse cx="210" cy="360" rx="140" ry="15" fill="#78350F" opacity="0.2" />
 
-              {/* Main Character - Celebrating/Jumping */}
-              <motion.g
-                animate={{ y: [0, -15, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              >
-                {/* Shadow - grows when jumping */}
-                <motion.ellipse
-                  cx="200"
-                  cy="350"
-                  rx="45"
-                  ry="10"
-                  fill="#1F2937"
-                  opacity="0.12"
-                  animate={{ scale: [0.7, 1, 0.7], opacity: [0.12, 0.08, 0.12] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                />
+              {/* Growing Skill Tree */}
+              <motion.g animate={{ scale: [0.98, 1, 0.98] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
+                {/* Tree Trunk */}
+                <rect x="195" y="270" width="30" height="95" rx="8" fill="url(#trunkGradient)" />
+                <rect x="200" y="275" width="5" height="85" rx="2" fill="#92400E" opacity="0.3" />
 
-                {/* Legs - Spread for jumping pose */}
-                <ellipse cx="175" cy="300" rx="14" ry="35" fill="#047857" transform="rotate(-15 175 300)" />
-                <ellipse cx="225" cy="300" rx="14" ry="35" fill="#047857" transform="rotate(15 225 300)" />
-                {/* Shoes */}
-                <ellipse cx="160" cy="332" rx="18" ry="10" fill="#1F2937" transform="rotate(-10 160 332)" />
-                <ellipse cx="240" cy="332" rx="18" ry="10" fill="#1F2937" transform="rotate(10 240 332)" />
-
-                {/* Body - Torso */}
-                <ellipse cx="200" cy="235" rx="45" ry="55" fill="url(#bodyGradientSignup)" />
-
-                {/* Arms raised in celebration */}
-                <motion.g animate={{ rotate: [-5, 5, -5] }} transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut" }}>
-                  <ellipse cx="140" cy="180" rx="12" ry="35" fill="#FFDAB9" transform="rotate(-45 140 180)" />
-                  <circle cx="118" cy="158" r="12" fill="#FFDAB9" />
+                {/* Tree Crown/Foliage */}
+                <motion.g animate={{ scale: [0.95, 1.02, 0.95] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+                  <ellipse cx="210" cy="200" rx="90" ry="85" fill="url(#foliageGradient)" />
+                  <ellipse cx="175" cy="185" rx="35" ry="40" fill="#10B981" />
+                  <ellipse cx="245" cy="185" rx="35" ry="40" fill="#10B981" />
+                  <ellipse cx="210" cy="155" rx="45" ry="45" fill="#059669" />
+                  <ellipse cx="160" cy="220" rx="30" ry="35" fill="#059669" />
+                  <ellipse cx="260" cy="220" rx="30" ry="35" fill="#059669" />
                 </motion.g>
-                <motion.g animate={{ rotate: [5, -5, 5] }} transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}>
-                  <ellipse cx="260" cy="180" rx="12" ry="35" fill="#FFDAB9" transform="rotate(45 260 180)" />
-                  <circle cx="282" cy="158" r="12" fill="#FFDAB9" />
+
+                {/* Skill Icons on Tree (Like fruits/ornaments) */}
+                <motion.g animate={{ y: [0, -3, 0], rotate: [-3, 3, -3] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+                  <circle cx="165" cy="170" r="16" fill="white" stroke="#10B981" strokeWidth="2" />
+                  <text x="165" y="175" textAnchor="middle" fontSize="12">📚</text>
+                </motion.g>
+
+                <motion.g animate={{ y: [0, -4, 0], rotate: [3, -3, 3] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}>
+                  <circle cx="255" cy="165" r="16" fill="white" stroke="#059669" strokeWidth="2" />
+                  <text x="255" y="170" textAnchor="middle" fontSize="12">💻</text>
+                </motion.g>
+
+                <motion.g animate={{ y: [0, -3, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}>
+                  <circle cx="210" cy="135" r="18" fill="white" stroke="#047857" strokeWidth="2" />
+                  <text x="210" y="141" textAnchor="middle" fontSize="13">🎓</text>
+                </motion.g>
+
+                <motion.g animate={{ y: [0, -2, 0], rotate: [-2, 2, -2] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.9 }}>
+                  <circle cx="145" cy="215" r="14" fill="white" stroke="#10B981" strokeWidth="2" />
+                  <text x="145" y="220" textAnchor="middle" fontSize="10">🏆</text>
+                </motion.g>
+
+                <motion.g animate={{ y: [0, -3, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}>
+                  <circle cx="275" cy="210" r="14" fill="white" stroke="#059669" strokeWidth="2" />
+                  <text x="275" y="215" textAnchor="middle" fontSize="10">📈</text>
+                </motion.g>
+              </motion.g>
+
+              {/* Character - Watering the tree */}
+              <motion.g
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              >
+                {/* Shadow */}
+                <ellipse cx="90" cy="358" rx="35" ry="8" fill="#1F2937" opacity="0.12" />
+
+                {/* Legs */}
+                <ellipse cx="75" cy="335" rx="11" ry="22" fill="#047857" transform="rotate(-5 75 335)" />
+                <ellipse cx="105" cy="335" rx="11" ry="22" fill="#047857" transform="rotate(5 105 335)" />
+                <ellipse cx="72" cy="355" rx="14" ry="8" fill="#1F2937" />
+                <ellipse cx="108" cy="355" rx="14" ry="8" fill="#1F2937" />
+
+                {/* Body */}
+                <ellipse cx="90" cy="295" rx="32" ry="40" fill="url(#characterGradient)" />
+
+                {/* Cute Overalls */}
+                <path d="M62 280 Q65 270 90 268 Q115 270 118 280 L115 328 Q90 332 65 328 Z" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="2" />
+                <rect x="80" y="290" width="20" height="16" rx="3" fill="#FDE68A" stroke="#F59E0B" strokeWidth="1" />
+                {/* Straps */}
+                <line x1="75" y1="268" x2="75" y2="285" stroke="#F59E0B" strokeWidth="3" strokeLinecap="round" />
+                <line x1="105" y1="268" x2="105" y2="285" stroke="#F59E0B" strokeWidth="3" strokeLinecap="round" />
+
+                {/* Left arm */}
+                <ellipse cx="55" cy="290" rx="9" ry="22" fill="#F5DEB3" transform="rotate(-20 55 290)" />
+                <circle cx="48" cy="275" r="9" fill="#F5DEB3" />
+
+                {/* Right arm holding watering can */}
+                <motion.g animate={{ rotate: [-6, 6, -6] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+                  <ellipse cx="125" cy="290" rx="9" ry="22" fill="#F5DEB3" transform="rotate(25 125 290)" />
+                  <circle cx="140" cy="300" r="9" fill="#F5DEB3" />
+
+                  {/* Watering Can - Cuter design */}
+                  <ellipse cx="162" cy="300" rx="18" ry="14" fill="#60A5FA" />
+                  <rect x="150" y="290" width="8" height="16" rx="3" fill="#3B82F6" />
+                  <rect x="172" y="296" width="22" height="5" rx="2" fill="#60A5FA" />
+                  <ellipse cx="196" cy="298" rx="6" ry="6" fill="#3B82F6" />
+                  {/* Water holes */}
+                  <circle cx="192" cy="298" r="1.5" fill="#93C5FD" />
+                  <circle cx="196" cy="296" r="1.5" fill="#93C5FD" />
+                  <circle cx="198" cy="300" r="1.5" fill="#93C5FD" />
+
+                  {/* Water Droplets */}
+                  <motion.g animate={{ y: [0, 25, 0], opacity: [1, 0, 1] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeIn" }}>
+                    <ellipse cx="194" cy="312" rx="3" ry="5" fill="#60A5FA" />
+                    <ellipse cx="200" cy="318" rx="2" ry="4" fill="#93C5FD" />
+                    <ellipse cx="188" cy="316" rx="2" ry="4" fill="#60A5FA" />
+                  </motion.g>
                 </motion.g>
 
                 {/* Neck */}
-                <rect x="188" y="168" width="24" height="22" rx="8" fill="#FFDAB9" />
+                <rect x="82" y="252" width="16" height="12" rx="5" fill="#F5DEB3" />
 
-                {/* Head */}
-                <circle cx="200" cy="135" r="45" fill="#FFDAB9" />
+                {/* Head - Rounder, cuter */}
+                <circle cx="90" cy="230" r="30" fill="#F5DEB3" />
 
-                {/* Hair - Cute messy style */}
-                <ellipse cx="200" cy="100" rx="47" ry="30" fill="#059669" />
-                <circle cx="160" cy="112" r="14" fill="#059669" />
-                <circle cx="240" cy="112" r="14" fill="#059669" />
-                <ellipse cx="200" cy="88" rx="38" ry="20" fill="#10B981" />
-                {/* Hair strand */}
-                <path d="M200 62 Q195 50 205 55 Q210 48 200 62" fill="#059669" />
+                {/* Sun Hat - Cuter */}
+                <ellipse cx="90" cy="202" rx="38" ry="10" fill="#FCD34D" />
+                <ellipse cx="90" cy="210" rx="25" ry="20" fill="#FBBF24" />
+                <ellipse cx="90" cy="198" rx="18" ry="8" fill="#F59E0B" />
+                {/* Hat ribbon */}
+                <rect x="65" y="210" width="50" height="4" rx="2" fill="#D97706" />
 
-                {/* Happy Closed Eyes (celebrating) */}
-                <motion.g>
-                  <path d="M175 130 Q185 120 195 130" stroke="#2D3748" strokeWidth="3" strokeLinecap="round" fill="none" />
-                  <path d="M205 130 Q215 120 225 130" stroke="#2D3748" strokeWidth="3" strokeLinecap="round" fill="none" />
+                {/* Face */}
+                {/* Eyes - Larger, anime-style */}
+                <motion.g animate={{ scaleY: [1, 0.1, 1] }} transition={{ duration: 5, repeat: Infinity, repeatDelay: 3 }}>
+                  <ellipse cx="78" cy="230" rx="8" ry="10" fill="white" />
+                  <ellipse cx="102" cy="230" rx="8" ry="10" fill="white" />
+                  <circle cx="80" cy="232" r="5" fill="#1E3A5F" />
+                  <circle cx="104" cy="232" r="5" fill="#1E3A5F" />
+                  <circle cx="82" cy="229" r="2" fill="white" />
+                  <circle cx="106" cy="229" r="2" fill="white" />
+                  <circle cx="78" cy="234" r="1.5" fill="white" opacity="0.5" />
+                  <circle cx="102" cy="234" r="1.5" fill="white" opacity="0.5" />
                 </motion.g>
 
-                {/* Eyebrows - Excited */}
-                <path d="M172 118 Q183 110 194 118" stroke="#2D3748" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                <path d="M206 118 Q217 110 228 118" stroke="#2D3748" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                {/* Eyebrows */}
+                <path d="M70 222 Q78 218 86 222" stroke="#8B5A2B" strokeWidth="2" strokeLinecap="round" fill="none" />
+                <path d="M94 222 Q102 218 110 222" stroke="#8B5A2B" strokeWidth="2" strokeLinecap="round" fill="none" />
 
-                {/* Big Open Smile */}
+                {/* Nose */}
+                <ellipse cx="90" cy="238" rx="3" ry="3" fill="#E8C9A0" />
+
+                {/* Happy smile */}
                 <motion.path
-                  d="M175 150 Q200 180 225 150"
-                  stroke="#DC2626"
-                  strokeWidth="3"
+                  d="M80 248 Q90 258 100 248"
+                  stroke="#C4626A"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   fill="none"
-                  animate={{ d: ["M175 150 Q200 180 225 150", "M175 152 Q200 185 225 152", "M175 150 Q200 180 225 150"] }}
-                  transition={{ duration: 1, repeat: Infinity }}
+                  animate={{ d: ["M80 248 Q90 258 100 248", "M80 250 Q90 262 100 250", "M80 248 Q90 258 100 248"] }}
+                  transition={{ duration: 3, repeat: Infinity }}
                 />
-                {/* Teeth */}
-                <path d="M182 155 Q200 162 218 155" fill="white" />
 
                 {/* Rosy Cheeks */}
-                <ellipse cx="160" cy="142" rx="12" ry="8" fill="#FCA5A5" opacity="0.5" />
-                <ellipse cx="240" cy="142" rx="12" ry="8" fill="#FCA5A5" opacity="0.5" />
+                <ellipse cx="65" cy="240" rx="8" ry="5" fill="#FCA5A5" opacity="0.45" />
+                <ellipse cx="115" cy="240" rx="8" ry="5" fill="#FCA5A5" opacity="0.45" />
               </motion.g>
 
-              {/* Celebration Effects */}
-              {/* Stars bursting out */}
-              <motion.g animate={{ scale: [0.5, 1.2, 0.5], opacity: [0.3, 1, 0.3], rotate: [0, 15, 0] }} transition={{ duration: 1, repeat: Infinity }}>
-                <path d="M100 140 L103 148 L112 148 L105 153 L108 162 L100 157 L92 162 L95 153 L88 148 L97 148 Z" fill="#FBBF24" />
-              </motion.g>
-              <motion.g animate={{ scale: [0.5, 1.3, 0.5], opacity: [0.3, 1, 0.3], rotate: [0, -20, 0] }} transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }}>
-                <path d="M300 130 L302 136 L309 136 L304 140 L306 147 L300 143 L294 147 L296 140 L291 136 L298 136 Z" fill="#F59E0B" />
-              </motion.g>
-              <motion.g animate={{ scale: [0.5, 1.1, 0.5], opacity: [0.3, 1, 0.3] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0.4 }}>
-                <path d="M130 90 L131 94 L136 94 L132 97 L134 102 L130 99 L126 102 L128 97 L124 94 L129 94 Z" fill="#FCD34D" />
-              </motion.g>
-              <motion.g animate={{ scale: [0.5, 1.2, 0.5], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.1, repeat: Infinity, delay: 0.6 }}>
-                <path d="M270 85 L271 89 L276 89 L272 92 L274 97 L270 94 L266 97 L268 92 L264 89 L269 89 Z" fill="#10B981" />
+              {/* Floating Learning Badges */}
+              <motion.g animate={{ y: [0, -10, 0], rotate: [-5, 5, -5] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+                <rect x="310" y="100" width="60" height="30" rx="8" fill="white" stroke="#10B981" strokeWidth="2" />
+                <text x="340" y="120" textAnchor="middle" fontSize="10" fill="#059669" fontWeight="bold">Start Here</text>
+                <circle cx="318" cy="115" r="6" fill="#10B981" />
+                <text x="318" y="118" textAnchor="middle" fontSize="7" fill="white">+</text>
               </motion.g>
 
-              {/* Confetti */}
-              <motion.g animate={{ y: [0, 50, 0], opacity: [1, 0, 1], rotate: [0, 360] }} transition={{ duration: 2.5, repeat: Infinity }}>
-                <rect x="120" y="70" width="8" height="8" rx="1" fill="#10B981" transform="rotate(45 120 70)" />
-                <rect x="280" y="60" width="6" height="6" rx="1" fill="#F59E0B" transform="rotate(30 280 60)" />
-                <rect x="90" y="180" width="7" height="7" rx="1" fill="#EC4899" transform="rotate(60 90 180)" />
-                <rect x="310" y="170" width="6" height="6" rx="1" fill="#6366F1" transform="rotate(15 310 170)" />
+              <motion.g animate={{ y: [0, 8, 0], rotate: [3, -3, 3] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
+                <rect x="320" y="260" width="55" height="28" rx="6" fill="white" stroke="#F59E0B" strokeWidth="2" />
+                <text x="347" y="278" textAnchor="middle" fontSize="9" fill="#D97706" fontWeight="bold">Learn!</text>
+                <motion.text
+                  x="327"
+                  y="278"
+                  fontSize="12"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >✨</motion.text>
               </motion.g>
 
-              {/* Floating Icons */}
-              <motion.g animate={{ y: [0, -10, 0], rotate: [0, 10, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}>
-                <circle cx="75" cy="180" r="16" fill="url(#iconGradS1)" />
-                <text x="75" y="185" textAnchor="middle" fontSize="12">🚀</text>
+              {/* Growth Arrows */}
+              <motion.g animate={{ y: [0, -8, 0], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+                <path d="M50 180 L50 140 L40 150 M50 140 L60 150" stroke="#10B981" strokeWidth="3" strokeLinecap="round" fill="none" />
+              </motion.g>
+              <motion.g animate={{ y: [0, -10, 0], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
+                <path d="M370 200 L370 160 L360 170 M370 160 L380 170" stroke="#059669" strokeWidth="3" strokeLinecap="round" fill="none" />
               </motion.g>
 
-              <motion.g animate={{ y: [0, 8, 0], rotate: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
-                <circle cx="325" cy="200" r="15" fill="url(#iconGradS2)" />
-                <text x="325" y="205" textAnchor="middle" fontSize="11">🎯</text>
+              {/* Floating Particles/Seeds */}
+              <motion.g animate={{ y: [0, -30, 0], opacity: [0, 1, 0], rotate: [0, 180, 360] }} transition={{ duration: 4, repeat: Infinity }}>
+                <ellipse cx="320" cy="320" rx="4" ry="6" fill="#84CC16" />
+                <ellipse cx="60" cy="140" rx="3" ry="5" fill="#10B981" />
+                <ellipse cx="350" cy="180" rx="4" ry="6" fill="#34D399" />
+                <ellipse cx="70" cy="200" rx="3" ry="5" fill="#6EE7B7" />
               </motion.g>
 
-              <motion.g animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}>
-                <circle cx="340" cy="140" r="14" fill="url(#iconGradS3)" />
-                <text x="340" y="145" textAnchor="middle" fontSize="10">✨</text>
+              {/* Sparkle Effects */}
+              <motion.g animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                <circle cx="40" cy="250" r="4" fill="#A7F3D0" />
+                <circle cx="380" cy="140" r="3" fill="#6EE7B7" />
+                <circle cx="45" cy="320" r="5" fill="#34D399" />
+                <circle cx="375" cy="300" r="4" fill="#10B981" />
               </motion.g>
 
-              {/* Sparkle Particles */}
-              <motion.g animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.3, 0.8] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                <circle cx="50" cy="320" r="4" fill="#6EE7B7" />
-                <circle cx="350" cy="300" r="3" fill="#34D399" />
-                <circle cx="70" cy="350" r="5" fill="#A7F3D0" />
-                <circle cx="330" cy="340" r="4" fill="#10B981" />
+              {/* Sun in corner */}
+              <motion.g animate={{ rotate: [0, 360] }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }}>
+                <circle cx="370" cy="60" r="25" fill="#FBBF24" />
+                {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
+                  <motion.line
+                    key={i}
+                    x1={370 + 30 * Math.cos(angle * Math.PI / 180)}
+                    y1={60 + 30 * Math.sin(angle * Math.PI / 180)}
+                    x2={370 + 40 * Math.cos(angle * Math.PI / 180)}
+                    y2={60 + 40 * Math.sin(angle * Math.PI / 180)}
+                    stroke="#FBBF24"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
+                  />
+                ))}
               </motion.g>
 
-              {/* Gradients */}
+              {/* Gradient Definitions */}
               <defs>
-                <radialGradient id="bgGradientSignup" cx="50%" cy="50%" r="50%">
+                <radialGradient id="growthBgGlow" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stopColor="#10B981" />
                   <stop offset="100%" stopColor="#ECFDF5" stopOpacity="0" />
                 </radialGradient>
-                <linearGradient id="bodyGradientSignup" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#A16207" />
+                  <stop offset="100%" stopColor="#78350F" />
+                </linearGradient>
+                <linearGradient id="foliageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#34D399" />
+                  <stop offset="100%" stopColor="#10B981" />
+                </linearGradient>
+                <linearGradient id="characterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#10B981" />
                   <stop offset="100%" stopColor="#059669" />
-                </linearGradient>
-                <linearGradient id="iconGradS1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#FBBF24" />
-                  <stop offset="100%" stopColor="#F59E0B" />
-                </linearGradient>
-                <linearGradient id="iconGradS2" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#A78BFA" />
-                  <stop offset="100%" stopColor="#8B5CF6" />
-                </linearGradient>
-                <linearGradient id="iconGradS3" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#F472B6" />
-                  <stop offset="100%" stopColor="#EC4899" />
                 </linearGradient>
               </defs>
             </svg>

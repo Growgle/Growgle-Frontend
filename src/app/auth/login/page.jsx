@@ -365,188 +365,217 @@ export default function LoginPage() {
             transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
             className="relative"
           >
-            <svg width="400" height="400" viewBox="0 0 400 400" fill="none" className="drop-shadow-2xl">
-              {/* Background Circle */}
+            <svg width="420" height="420" viewBox="0 0 420 420" fill="none" className="drop-shadow-2xl">
+              {/* Soft Background Glow */}
               <motion.circle
-                cx="200"
-                cy="200"
-                r="150"
-                fill="url(#bgGradientLogin)"
-                opacity="0.15"
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              />
-
-              {/* Floating Abstract Shapes */}
-              <motion.rect
-                x="80"
-                y="80"
-                width="40"
-                height="40"
-                rx="8"
-                fill="#6366F1"
-                opacity="0.6"
-                animate={{ rotate: [0, 90, 0], y: [0, -10, 0] }}
+                cx="210"
+                cy="210"
+                r="180"
+                fill="url(#careerBgGlow)"
+                opacity="0.12"
+                animate={{ scale: [1, 1.04, 1] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               />
-              <motion.circle
-                cx="320"
-                cy="100"
-                r="25"
-                fill="#8B5CF6"
-                opacity="0.5"
-                animate={{ scale: [1, 1.2, 1], x: [0, 10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <motion.polygon
-                points="60,200 80,240 40,240"
-                fill="#A78BFA"
-                opacity="0.5"
-                animate={{ rotate: [0, 180, 360] }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                style={{ transformOrigin: "60px 220px" }}
-              />
-              <motion.rect
-                x="320"
-                y="280"
-                width="30"
-                height="30"
-                rx="6"
-                fill="#C4B5FD"
-                opacity="0.6"
-                animate={{ rotate: [0, -45, 0], y: [0, 15, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              />
 
-              {/* Main Character - Floating Person */}
+              {/* Career Steps/Staircase */}
+              <motion.g animate={{ y: [0, -3, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
+                {/* Step 1 - Bottom */}
+                <rect x="100" y="320" width="100" height="20" rx="4" fill="#E0E7FF" />
+                <rect x="100" y="320" width="100" height="3" rx="1" fill="#C7D2FE" />
+
+                {/* Step 2 */}
+                <rect x="140" y="280" width="100" height="20" rx="4" fill="#C7D2FE" />
+                <rect x="140" y="280" width="100" height="3" rx="1" fill="#A5B4FC" />
+
+                {/* Step 3 */}
+                <rect x="180" y="240" width="100" height="20" rx="4" fill="#A5B4FC" />
+                <rect x="180" y="240" width="100" height="3" rx="1" fill="#818CF8" />
+
+                {/* Step 4 - Top */}
+                <rect x="220" y="200" width="100" height="20" rx="4" fill="#818CF8" />
+                <rect x="220" y="200" width="100" height="3" rx="1" fill="#6366F1" />
+
+                {/* Goal Flag at top */}
+                <motion.g animate={{ rotate: [-5, 5, -5] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+                  <rect x="305" y="165" width="4" height="40" rx="1" fill="#4338CA" />
+                  <path d="M309 165 L345 178 L309 191 Z" fill="url(#flagGradient)" />
+                  <text x="325" y="182" textAnchor="middle" fontSize="10" fill="white">🎯</text>
+                </motion.g>
+              </motion.g>
+
+              {/* Character Climbing */}
               <motion.g
-                animate={{ y: [0, -12, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ y: [0, -8, 0], x: [0, 2, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
               >
                 {/* Shadow */}
-                <motion.ellipse
-                  cx="200"
-                  cy="340"
-                  rx="50"
-                  ry="12"
-                  fill="#1F2937"
-                  opacity="0.15"
-                  animate={{ scale: [1, 0.85, 1] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                />
+                <ellipse cx="235" cy="242" rx="30" ry="8" fill="#1F2937" opacity="0.12" />
 
-                {/* Body */}
-                <ellipse cx="200" cy="240" rx="40" ry="50" fill="url(#bodyGradient)" />
+                {/* Body - Clean professional shirt */}
+                <ellipse cx="235" cy="185" rx="30" ry="38" fill="url(#suitGradient)" />
+                <ellipse cx="235" cy="175" rx="26" ry="28" fill="#4F46E5" />
 
-                {/* Legs crossed */}
-                <ellipse cx="185" cy="295" rx="12" ry="25" fill="#4338CA" transform="rotate(-20 185 295)" />
-                <ellipse cx="215" cy="295" rx="12" ry="25" fill="#4338CA" transform="rotate(20 215 295)" />
-                <circle cx="175" cy="315" r="10" fill="#3730A3" />
-                <circle cx="225" cy="315" r="10" fill="#3730A3" />
+                {/* Collar */}
+                <path d="M222 155 L235 168 L248 155" fill="white" />
+                <circle cx="235" cy="160" r="3" fill="#6366F1" />
 
-                {/* Arms holding tablet */}
-                <ellipse cx="155" cy="235" rx="10" ry="25" fill="#FFDAB9" transform="rotate(30 155 235)" />
-                <ellipse cx="245" cy="235" rx="10" ry="25" fill="#FFDAB9" transform="rotate(-30 245 235)" />
+                {/* Arms */}
+                <motion.g animate={{ rotate: [-8, 5, -8] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>
+                  <ellipse cx="200" cy="165" rx="9" ry="26" fill="#F5DEB3" transform="rotate(-50 200 165)" />
+                  <circle cx="182" cy="148" r="10" fill="#F5DEB3" />
+                  {/* Fingers reaching */}
+                  <ellipse cx="175" cy="143" rx="3" ry="6" fill="#F5DEB3" transform="rotate(-15 175 143)" />
+                  <ellipse cx="182" cy="138" rx="3" ry="6" fill="#F5DEB3" />
+                  <ellipse cx="189" cy="142" rx="3" ry="5" fill="#F5DEB3" transform="rotate(15 189 142)" />
+                </motion.g>
+                <ellipse cx="268" cy="180" rx="9" ry="22" fill="#F5DEB3" transform="rotate(30 268 180)" />
+                <circle cx="278" cy="198" r="9" fill="#F5DEB3" />
 
-                {/* Hands */}
-                <circle cx="148" cy="260" r="10" fill="#FFDAB9" />
-                <circle cx="252" cy="260" r="10" fill="#FFDAB9" />
-
-                {/* Tablet/Device */}
-                <rect x="160" y="230" width="80" height="55" rx="6" fill="#1F2937" />
-                <rect x="165" y="235" width="70" height="45" rx="4" fill="#312E81" />
-                <motion.rect
-                  x="172"
-                  y="242"
-                  width="40"
-                  height="4"
-                  rx="2"
-                  fill="#818CF8"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
-                <rect x="172" y="250" width="55" height="3" rx="1.5" fill="#6366F1" opacity="0.7" />
-                <rect x="172" y="257" width="45" height="3" rx="1.5" fill="#6366F1" opacity="0.5" />
-                <rect x="172" y="264" width="50" height="3" rx="1.5" fill="#6366F1" opacity="0.6" />
+                {/* Legs */}
+                <ellipse cx="222" cy="222" rx="10" ry="22" fill="#374151" transform="rotate(-10 222 222)" />
+                <ellipse cx="248" cy="224" rx="10" ry="20" fill="#374151" transform="rotate(15 248 224)" />
+                <ellipse cx="215" cy="242" rx="13" ry="7" fill="#1F2937" />
+                <ellipse cx="255" cy="243" rx="12" ry="6" fill="#1F2937" />
 
                 {/* Neck */}
-                <rect x="190" y="175" width="20" height="20" rx="6" fill="#FFDAB9" />
+                <rect x="228" y="138" width="14" height="14" rx="5" fill="#F5DEB3" />
 
-                {/* Head */}
-                <circle cx="200" cy="150" r="42" fill="#FFDAB9" />
+                {/* Head - Rounder, more polished */}
+                <circle cx="235" cy="115" r="30" fill="#F5DEB3" />
 
-                {/* Hair - Modern side-swept */}
-                <ellipse cx="200" cy="118" rx="44" ry="28" fill="#3730A3" />
-                <ellipse cx="175" cy="130" rx="18" ry="20" fill="#3730A3" />
-                <ellipse cx="225" cy="130" rx="15" ry="18" fill="#3730A3" />
-                <ellipse cx="200" cy="108" rx="35" ry="18" fill="#4338CA" />
-                <path d="M160 125 Q175 100 200 105 Q225 100 240 125" fill="#3730A3" />
+                {/* Hair - Modern clean style */}
+                <ellipse cx="235" cy="92" rx="32" ry="20" fill="#1E293B" />
+                <ellipse cx="212" cy="102" rx="12" ry="13" fill="#1E293B" />
+                <ellipse cx="258" cy="102" rx="12" ry="13" fill="#1E293B" />
+                <ellipse cx="235" cy="85" rx="24" ry="13" fill="#334155" />
+                {/* Side part */}
+                <path d="M210 95 Q220 80 235 85" fill="#1E293B" />
 
-                {/* Eyes - Focused on screen */}
-                <motion.g animate={{ scaleY: [1, 0.1, 1] }} transition={{ duration: 4, repeat: Infinity, repeatDelay: 3 }}>
-                  <ellipse cx="185" cy="150" rx="10" ry="12" fill="white" />
-                  <ellipse cx="215" cy="150" rx="10" ry="12" fill="white" />
-                  <circle cx="187" cy="153" r="6" fill="#1E3A5F" />
-                  <circle cx="217" cy="153" r="6" fill="#1E3A5F" />
-                  <circle cx="189" cy="150" r="2.5" fill="white" />
-                  <circle cx="219" cy="150" r="2.5" fill="white" />
+                {/* Eyes - Larger, more expressive */}
+                <motion.g animate={{ scaleY: [1, 0.1, 1] }} transition={{ duration: 5, repeat: Infinity, repeatDelay: 3 }}>
+                  <ellipse cx="223" cy="115" rx="9" ry="11" fill="white" />
+                  <ellipse cx="247" cy="115" rx="9" ry="11" fill="white" />
+                  <circle cx="225" cy="117" r="6" fill="#1E3A5F" />
+                  <circle cx="249" cy="117" r="6" fill="#1E3A5F" />
+                  <circle cx="227" cy="114" r="2.5" fill="white" />
+                  <circle cx="251" cy="114" r="2.5" fill="white" />
+                  <circle cx="223" cy="119" r="1.5" fill="white" opacity="0.5" />
+                  <circle cx="247" cy="119" r="1.5" fill="white" opacity="0.5" />
                 </motion.g>
 
-                {/* Eyebrows - Concentrated */}
-                <path d="M173 138 Q185 135 197 140" stroke="#2D3748" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                <path d="M203 140 Q215 135 227 138" stroke="#2D3748" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                {/* Eyebrows */}
+                <path d="M213 105 Q223 100 233 104" stroke="#1E293B" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                <path d="M237 104 Q247 100 257 105" stroke="#1E293B" strokeWidth="2.5" strokeLinecap="round" fill="none" />
 
-                {/* Subtle smile */}
-                <path d="M190 168 Q200 175 210 168" stroke="#B45B5B" strokeWidth="2" strokeLinecap="round" fill="none" />
+                {/* Nose */}
+                <ellipse cx="235" cy="122" rx="3" ry="4" fill="#E8C9A0" />
 
-                {/* Rosy cheeks */}
-                <ellipse cx="168" cy="160" rx="8" ry="5" fill="#FCA5A5" opacity="0.4" />
-                <ellipse cx="232" cy="160" rx="8" ry="5" fill="#FCA5A5" opacity="0.4" />
+                {/* Confident smile */}
+                <path d="M225 132 Q235 140 245 132" stroke="#C4626A" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+
+                {/* Blush */}
+                <ellipse cx="210" cy="125" rx="8" ry="4" fill="#FCA5A5" opacity="0.35" />
+                <ellipse cx="260" cy="125" rx="8" ry="4" fill="#FCA5A5" opacity="0.35" />
               </motion.g>
 
-              {/* Floating Icons */}
-              <motion.g animate={{ y: [0, -8, 0], rotate: [0, 5, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}>
-                <circle cx="90" cy="150" r="18" fill="url(#iconGrad1)" />
-                <text x="90" y="156" textAnchor="middle" fontSize="14">🔐</text>
+              {/* Floating Skill Badges */}
+              <motion.g animate={{ y: [0, -12, 0], rotate: [-5, 5, -5] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+                <rect x="60" y="150" width="50" height="28" rx="6" fill="white" stroke="#6366F1" strokeWidth="2" />
+                <text x="85" y="168" textAnchor="middle" fontSize="10" fill="#4338CA" fontWeight="bold">Skills</text>
+                <circle cx="70" cy="164" r="6" fill="#10B981" />
+                <text x="70" y="167" textAnchor="middle" fontSize="8" fill="white">✓</text>
               </motion.g>
 
-              <motion.g animate={{ y: [0, 10, 0], rotate: [0, -5, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
-                <circle cx="310" cy="180" r="16" fill="url(#iconGrad2)" />
-                <text x="310" y="185" textAnchor="middle" fontSize="12">✉️</text>
+              <motion.g animate={{ y: [0, 10, 0], rotate: [5, -5, 5] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
+                <rect x="320" y="120" width="55" height="28" rx="6" fill="white" stroke="#10B981" strokeWidth="2" />
+                <text x="347" y="138" textAnchor="middle" fontSize="9" fill="#059669" fontWeight="bold">Growth</text>
+                <motion.path
+                  d="M328 128 L333 135 L343 125"
+                  stroke="#10B981"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  fill="none"
+                  animate={{ pathLength: [0, 1, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
               </motion.g>
 
-              <motion.g animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}>
-                <circle cx="330" cy="250" r="14" fill="url(#iconGrad3)" />
-                <text x="330" y="255" textAnchor="middle" fontSize="11">✓</text>
+              {/* Career Icons */}
+              <motion.g animate={{ scale: [1, 1.15, 1], y: [0, -5, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}>
+                <circle cx="75" cy="260" r="22" fill="url(#iconBadge1)" />
+                <text x="75" y="266" textAnchor="middle" fontSize="16">💼</text>
               </motion.g>
 
-              {/* Particles */}
-              <motion.g animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }} transition={{ duration: 2, repeat: Infinity }}>
-                <circle cx="70" cy="280" r="4" fill="#A5B4FC" />
-                <circle cx="340" cy="140" r="3" fill="#C4B5FD" />
-                <circle cx="100" cy="320" r="5" fill="#818CF8" />
-                <circle cx="300" cy="330" r="4" fill="#6366F1" />
+              <motion.g animate={{ scale: [1, 1.1, 1], y: [0, 6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}>
+                <circle cx="355" y="270" r="20" fill="url(#iconBadge2)" />
+                <text x="355" y="276" textAnchor="middle" fontSize="14">📈</text>
               </motion.g>
 
-              {/* Gradients */}
+              <motion.g animate={{ rotate: [0, 360] }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }}>
+                <circle cx="90" cy="340" r="16" fill="url(#iconBadge3)" />
+                <text x="90" y="345" textAnchor="middle" fontSize="12">⭐</text>
+              </motion.g>
+
+              <motion.g animate={{ y: [0, -8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}>
+                <circle cx="340" cy="340" r="18" fill="url(#iconBadge4)" />
+                <text x="340" y="346" textAnchor="middle" fontSize="13">🏆</text>
+              </motion.g>
+
+              {/* Progress Bar */}
+              <motion.g animate={{ opacity: [0.8, 1, 0.8] }} transition={{ duration: 2, repeat: Infinity }}>
+                <rect x="130" y="370" width="160" height="12" rx="6" fill="#E0E7FF" />
+                <motion.rect
+                  x="130"
+                  y="370"
+                  width="120"
+                  height="12"
+                  rx="6"
+                  fill="url(#progressGradient)"
+                  animate={{ width: [80, 120, 80] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <text x="210" y="379" textAnchor="middle" fontSize="8" fill="#4338CA" fontWeight="bold">75%</text>
+              </motion.g>
+
+              {/* Sparkle Particles */}
+              <motion.g animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                <circle cx="50" cy="200" r="4" fill="#A5B4FC" />
+                <circle cx="370" cy="180" r="3" fill="#C4B5FD" />
+                <circle cx="45" cy="300" r="5" fill="#818CF8" />
+                <circle cx="375" cy="320" r="4" fill="#6366F1" />
+              </motion.g>
+
+              {/* Gradient Definitions */}
               <defs>
-                <radialGradient id="bgGradientLogin" cx="50%" cy="50%" r="50%">
+                <radialGradient id="careerBgGlow" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stopColor="#6366F1" />
-                  <stop offset="100%" stopColor="#E0E7FF" stopOpacity="0" />
+                  <stop offset="100%" stopColor="#EEF2FF" stopOpacity="0" />
                 </radialGradient>
-                <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6366F1" />
-                  <stop offset="100%" stopColor="#4338CA" />
+                <linearGradient id="suitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#4338CA" />
+                  <stop offset="100%" stopColor="#3730A3" />
                 </linearGradient>
-                <linearGradient id="iconGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="flagGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#F59E0B" />
+                  <stop offset="100%" stopColor="#D97706" />
+                </linearGradient>
+                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#6366F1" />
+                  <stop offset="100%" stopColor="#8B5CF6" />
+                </linearGradient>
+                <linearGradient id="iconBadge1" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#FBBF24" />
                   <stop offset="100%" stopColor="#F59E0B" />
                 </linearGradient>
-                <linearGradient id="iconGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="iconBadge2" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#34D399" />
                   <stop offset="100%" stopColor="#10B981" />
                 </linearGradient>
-                <linearGradient id="iconGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="iconBadge3" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#F472B6" />
+                  <stop offset="100%" stopColor="#EC4899" />
+                </linearGradient>
+                <linearGradient id="iconBadge4" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#60A5FA" />
                   <stop offset="100%" stopColor="#3B82F6" />
                 </linearGradient>
