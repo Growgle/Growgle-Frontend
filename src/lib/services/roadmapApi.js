@@ -46,3 +46,18 @@ export const createRoadmap = ({
 export const getRoadmapById = (id) => apiClient.get(`/roadmaps/${id}`);
 
 export const updateRoadmap = (id, data) => apiClient.patch(`/roadmaps/${id}`, data);
+
+// Timer sync functions for cross-device synchronization
+export const startTimerSync = (roadmapId, milestoneId, phaseId) =>
+  apiClient.patch(`/roadmaps/${roadmapId}`, {
+    activeTimer: {
+      milestoneId,
+      phaseId,
+      startTime: new Date().toISOString(),
+    },
+  });
+
+export const stopTimerSync = (roadmapId) =>
+  apiClient.patch(`/roadmaps/${roadmapId}`, {
+    activeTimer: null,
+  });

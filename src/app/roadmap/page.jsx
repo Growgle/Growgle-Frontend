@@ -48,8 +48,8 @@ const RoadmapDashboard = () => {
         const items = Array.isArray(data?.data)
           ? data.data
           : Array.isArray(data)
-          ? data
-          : [];
+            ? data
+            : [];
         setRoadmaps(items);
       } catch (e) {
         setRoadmapsError(e?.message || "Failed to load roadmaps");
@@ -102,22 +102,22 @@ const RoadmapDashboard = () => {
         : "course";
     const phases = Array.isArray(roadmapData?.phases)
       ? roadmapData.phases.map((p, pi) => ({
-          id: Number.isFinite(Number(p?.id)) ? Number(p.id) : pi + 1,
-          title: String(p?.title || `Phase ${pi + 1}`),
-          duration: String(p?.duration || ""),
-          status: normStatus(p?.status),
-          progress: clamp(p?.progress ?? 0, 0, 100),
-          milestones: Array.isArray(p?.milestones)
-            ? p.milestones.map((m, mi) => ({
-                id: Number.isFinite(Number(m?.id)) ? Number(m.id) : mi + 1,
-                title: String(m?.title || `Milestone ${mi + 1}`),
-                type: normType(m?.type),
-                duration: String(m?.duration || ""),
-                status: normStatus(m?.status),
-                provider: m?.provider ? String(m.provider) : undefined,
-              }))
-            : [],
-        }))
+        id: Number.isFinite(Number(p?.id)) ? Number(p.id) : pi + 1,
+        title: String(p?.title || `Phase ${pi + 1}`),
+        duration: String(p?.duration || ""),
+        status: normStatus(p?.status),
+        progress: clamp(p?.progress ?? 0, 0, 100),
+        milestones: Array.isArray(p?.milestones)
+          ? p.milestones.map((m, mi) => ({
+            id: Number.isFinite(Number(m?.id)) ? Number(m.id) : mi + 1,
+            title: String(m?.title || `Milestone ${mi + 1}`),
+            type: normType(m?.type),
+            duration: String(m?.duration || ""),
+            status: normStatus(m?.status),
+            provider: m?.provider ? String(m.provider) : undefined,
+          }))
+          : [],
+      }))
       : [];
     return { ...roadmapData, phases };
   };
@@ -159,9 +159,8 @@ const RoadmapDashboard = () => {
 
       const toSave = {
         title: roadmapData.title || newRoadmapTitle,
-        description: `${
-          roadmapData.phases?.length || 0
-        } phases with personalized milestones`,
+        description: `${roadmapData.phases?.length || 0
+          } phases with personalized milestones`,
         completionRate,
         progress: completionRate,
         totalDuration: roadmapData.totalDuration || newRoadmapDuration,
@@ -190,8 +189,8 @@ const RoadmapDashboard = () => {
       console.error("Roadmap generation error:", error);
       setGenerationError(
         error?.response?.data?.error ||
-          error.message ||
-          "Failed to generate roadmap. Please try again."
+        error.message ||
+        "Failed to generate roadmap. Please try again."
       );
     } finally {
       setIsGenerating(false);
@@ -201,13 +200,16 @@ const RoadmapDashboard = () => {
   const overallProgress =
     roadmaps.length > 0
       ? Math.round(
-          roadmaps.reduce((sum, r) => sum + r.progress, 0) / roadmaps.length
-        )
+        roadmaps.reduce((sum, r) => sum + (r.progress || 0), 0) / roadmaps.length
+      )
       : 0;
-  const totalMonths = roadmaps.reduce(
-    (sum, r) => sum + parseInt(r.duration),
-    0
-  );
+
+  // Calculate max duration by parsing 'X months' format or using totalDuration field
+  const maxMonths = roadmaps.reduce((max, r) => {
+    const durationStr = r.totalDuration || r.duration || '';
+    const parsed = parseInt(durationStr.replace(/[^0-9]/g, ''), 10);
+    return Math.max(max, isNaN(parsed) ? 0 : parsed);
+  }, 0);
 
   return (
     <AuthGuard>
@@ -265,8 +267,8 @@ const RoadmapDashboard = () => {
               },
               {
                 icon: Clock,
-                label: "Total Duration",
-                value: `${totalMonths} months`,
+                label: "Max Duration",
+                value: `${maxMonths} months`,
                 color: "yellow",
               },
               {
@@ -475,17 +477,19 @@ const RoadmapDashboard = () => {
                 >
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      <div className="flex-1 min-w-0 mr-3">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1 truncate">
                           {roadmap.title}
                         </h3>
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-gray-600 text-sm line-clamp-2">
                           {roadmap.description}
                         </p>
                       </div>
-                      <span className="text-2xl font-bold text-blue-600">
-                        {animatedProgress[index]}%
-                      </span>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-2xl font-bold text-blue-600">
+                          {roadmap.progress || 0}%
+                        </span>
+                      </div>
                     </div>
 
                     {/* Progress Bar */}
@@ -508,8 +512,8 @@ const RoadmapDashboard = () => {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock size={16} />
-                        <span>Duration: {roadmap.duration}</span>
+                        <Clock size={16} className="flex-shrink-0" />
+                        <span>Duration: {roadmap.totalDuration || roadmap.duration || 'N/A'}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Target size={16} />
@@ -518,8 +522,8 @@ const RoadmapDashboard = () => {
                           {roadmap.progress === 100
                             ? "Completed"
                             : roadmap.progress > 0
-                            ? "In Progress"
-                            : "Not Started"}
+                              ? "In Progress"
+                              : "Not Started"}
                         </span>
                       </div>
                     </div>
@@ -529,23 +533,22 @@ const RoadmapDashboard = () => {
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-600">Learning Progress</span>
                         <span
-                          className={`font-medium ${
-                            roadmap.progress === 100
-                              ? "text-green-600"
-                              : roadmap.progress > 50
+                          className={`font-medium ${roadmap.progress === 100
+                            ? "text-green-600"
+                            : roadmap.progress > 50
                               ? "text-blue-600"
                               : roadmap.progress > 0
-                              ? "text-yellow-600"
-                              : "text-gray-500"
-                          }`}
+                                ? "text-yellow-600"
+                                : "text-gray-500"
+                            }`}
                         >
                           {roadmap.progress === 100
                             ? "Completed!"
                             : roadmap.progress > 50
-                            ? "Making great progress"
-                            : roadmap.progress > 0
-                            ? "Getting started"
-                            : "Ready to begin"}
+                              ? "Making great progress"
+                              : roadmap.progress > 0
+                                ? "Getting started"
+                                : "Ready to begin"}
                         </span>
                       </div>
                     </div>
