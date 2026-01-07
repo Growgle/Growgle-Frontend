@@ -100,6 +100,7 @@ export default function ProfilePage() {
     },
   });
   const [loadingResume, setLoadingResume] = useState(true);
+  const [agentProcessing, setAgentProcessing] = useState(false);
   const fileInputRef = useRef(null);
   const router = useRouter();
 
@@ -118,7 +119,10 @@ export default function ProfilePage() {
       alert("No resume URL available to download.");
       return;
     }
-    const filename = (resumeData.fileName || "resume.pdf").replace(/[^\w.\-]+/g, "_");
+    const filename = (resumeData.fileName || "resume.pdf").replace(
+      /[^\w.\-]+/g,
+      "_"
+    );
     try {
       const res = await fetch(url, { credentials: "omit" });
       if (res.ok) {
@@ -133,12 +137,14 @@ export default function ProfilePage() {
         URL.revokeObjectURL(blobUrl);
         return;
       }
-    } catch (e) {
-    }
+    } catch (e) {}
 
     try {
       if (/res\.cloudinary\.com/.test(url) && url.includes("/upload/")) {
-        const dlUrl = url.replace("/upload/", `/upload/fl_attachment:${encodeURIComponent(filename)}/`);
+        const dlUrl = url.replace(
+          "/upload/",
+          `/upload/fl_attachment:${encodeURIComponent(filename)}/`
+        );
         const a = document.createElement("a");
         a.href = dlUrl;
         a.target = "_blank";
@@ -148,8 +154,7 @@ export default function ProfilePage() {
         document.body.removeChild(a);
         return;
       }
-    } catch (e) {
-    }
+    } catch (e) {}
 
     window.open(url, "_blank");
   };
@@ -183,6 +188,18 @@ export default function ProfilePage() {
       void fetchProfile();
       void fetchProfileCompleteness();
       setIsEditing(false);
+      console.log("[Profile] ✓ Profile updated successfully");
+      console.log(
+        "[Profile] 🤖 Backend should now trigger agents: careerPlanningAgent, skillGapRoadmapAgent, jobSearchApplicationAgent"
+      );
+      console.log(
+        "[Profile] 💡 TIP: Navigate to Dashboard to see agent results (wait 5-10 seconds for agents to complete)"
+      );
+      setAgentProcessing(true);
+      setTimeout(() => {
+        console.log("[Profile] Agent processing indicator hidden");
+        setAgentProcessing(false);
+      }, 5000);
     } catch (e) {
       setError(e.message || "Failed to update profile");
     }
@@ -227,21 +244,30 @@ export default function ProfilePage() {
 
     (editData.skills || []).forEach((s, i) => {
       if (isBlank(s.name)) errors.push(`Skill #${i + 1}: name is required`);
-      if (isBlank(s.category)) errors.push(`Skill #${i + 1}: category is required`);
-      if (s.level == null || isNaN(s.level)) errors.push(`Skill #${i + 1}: level is required`);
+      if (isBlank(s.category))
+        errors.push(`Skill #${i + 1}: category is required`);
+      if (s.level == null || isNaN(s.level))
+        errors.push(`Skill #${i + 1}: level is required`);
     });
 
     (editData.experience || []).forEach((e, i) => {
-      if (isBlank(e.position)) errors.push(`Experience #${i + 1}: position is required`);
-      if (isBlank(e.company)) errors.push(`Experience #${i + 1}: company is required`);
-      if (isBlank(e.duration)) errors.push(`Experience #${i + 1}: duration is required`);
-      if (isBlank(e.location)) errors.push(`Experience #${i + 1}: location is required`);
-      if (isBlank(e.description)) errors.push(`Experience #${i + 1}: description is required`);
+      if (isBlank(e.position))
+        errors.push(`Experience #${i + 1}: position is required`);
+      if (isBlank(e.company))
+        errors.push(`Experience #${i + 1}: company is required`);
+      if (isBlank(e.duration))
+        errors.push(`Experience #${i + 1}: duration is required`);
+      if (isBlank(e.location))
+        errors.push(`Experience #${i + 1}: location is required`);
+      if (isBlank(e.description))
+        errors.push(`Experience #${i + 1}: description is required`);
     });
 
     (editData.education || []).forEach((e, i) => {
-      if (isBlank(e.degree)) errors.push(`Education #${i + 1}: degree is required`);
-      if (isBlank(e.school)) errors.push(`Education #${i + 1}: school is required`);
+      if (isBlank(e.degree))
+        errors.push(`Education #${i + 1}: degree is required`);
+      if (isBlank(e.school))
+        errors.push(`Education #${i + 1}: school is required`);
       if (isBlank(e.year)) errors.push(`Education #${i + 1}: year is required`);
       if (isBlank(e.gpa)) errors.push(`Education #${i + 1}: GPA is required`);
     });
@@ -257,7 +283,10 @@ export default function ProfilePage() {
       location: "",
       description: "",
     };
-    setEditData({ ...editData, experience: [exp, ...(editData.experience || [])] });
+    setEditData({
+      ...editData,
+      experience: [exp, ...(editData.experience || [])],
+    });
   };
 
   const updateExperience = (index, field, value) => {
@@ -274,7 +303,10 @@ export default function ProfilePage() {
   // Education helpers
   const addEducation = () => {
     const edu = { degree: "", school: "", year: "", gpa: "" };
-    setEditData({ ...editData, education: [edu, ...(editData.education || [])] });
+    setEditData({
+      ...editData,
+      education: [edu, ...(editData.education || [])],
+    });
   };
 
   const updateEducation = (index, field, value) => {
@@ -299,9 +331,9 @@ export default function ProfilePage() {
         file = f;
       }
       setIsProcessingResume(true);
-  const formData = new FormData();
-  formData.append("resume", file, file.name);
-            const token =
+      const formData = new FormData();
+      formData.append("resume", file, file.name);
+      const token =
         typeof window !== "undefined"
           ? localStorage.getItem("accessToken")
           : null;
@@ -343,21 +375,32 @@ export default function ProfilePage() {
 
   const handleGenerateResume = async () => {
     const buildLatexFromProfile = (p) => {
-      const esc = (s = "") => String(s)
-        .replace(/&/g, "\\&")
-        .replace(/%/g, "\\%")
-        .replace(/_/g, "\\_")
-        .replace(/#/g, "\\#");
+      const esc = (s = "") =>
+        String(s)
+          .replace(/&/g, "\\&")
+          .replace(/%/g, "\\%")
+          .replace(/_/g, "\\_")
+          .replace(/#/g, "\\#");
       const skills = (p.skills || [])
         .map((s) => `\\textbf{${esc(s.name)}} (${s.level}\\%)`)
         .join(" \\quad ");
       const exp = (p.experience || [])
         .map(
-          (e) => `\\textbf{${esc(e.position)}} — ${esc(e.company)} \\hfill ${esc(e.duration)}\\\\\n${esc(e.location)}\\\\\n\\begin{itemize}\n  \\item ${esc(e.description)}\n\\end{itemize}`
+          (e) =>
+            `\\textbf{${esc(e.position)}} — ${esc(e.company)} \\hfill ${esc(
+              e.duration
+            )}\\\\\n${esc(e.location)}\\\\\n\\begin{itemize}\n  \\item ${esc(
+              e.description
+            )}\n\\end{itemize}`
         )
         .join("\n\n");
       const edu = (p.education || [])
-        .map((e) => `${esc(e.degree)} — ${esc(e.school)} (\\textit{${esc(e.year)}})\\hfill GPA: ${esc(e.gpa)}`)
+        .map(
+          (e) =>
+            `${esc(e.degree)} — ${esc(e.school)} (\\textit{${esc(
+              e.year
+            )}})\\hfill GPA: ${esc(e.gpa)}`
+        )
         .join("\\\\\n");
       return `\\documentclass[11pt]{article}
 \\usepackage[margin=0.8in]{geometry}
@@ -367,8 +410,12 @@ export default function ProfilePage() {
 \\begin{document}
 \\begin{center}
   {\\LARGE ${esc(p.name || "")} } \\\\
-  ${esc(p.title || "")} \\ \textbar{} ${esc(p.location || "")} \\ \textbar{} ${esc(p.email || "")} \\\\
-  \href{${esc(p.social?.github || "")}}{GitHub} \textbar{} \href{${esc(p.social?.linkedin || "")}}{LinkedIn}
+  ${esc(p.title || "")} \\ \textbar{} ${esc(
+        p.location || ""
+      )} \\ \textbar{} ${esc(p.email || "")} \\\\
+  \href{${esc(p.social?.github || "")}}{GitHub} \textbar{} \href{${esc(
+        p.social?.linkedin || ""
+      )}}{LinkedIn}
 \\end{center}
 \\vspace{6pt}
 \\noindent ${esc(p.bio || "")} \\\\
@@ -387,12 +434,22 @@ ${edu || ""}
       const compileRes = await compileLatexApi(latex);
       const pdfBlob = compileRes?.data;
 
-      const fileName = `${(editData.name || "user").replace(/\s+/g, "_")}_Resume.pdf`;
+      const fileName = `${(editData.name || "user").replace(
+        /\s+/g,
+        "_"
+      )}_Resume.pdf`;
       const form = new FormData();
-      form.append("resume", new File([pdfBlob], fileName, { type: "application/pdf" }));
+      form.append(
+        "resume",
+        new File([pdfBlob], fileName, { type: "application/pdf" })
+      );
       form.append("latex", latex);
       const uploaded = await uploadResumeApi(form);
-      const resume = uploaded?.data?.resume || uploaded?.data?.data?.resume || uploaded?.data || {};
+      const resume =
+        uploaded?.data?.resume ||
+        uploaded?.data?.data?.resume ||
+        uploaded?.data ||
+        {};
       setResumeData((prev) => ({
         ...prev,
         score: resume.score ?? prev.score,
@@ -407,7 +464,15 @@ ${edu || ""}
         setUploadedResume(resume.url);
         setResumeFileName(resume.fileName || fileName);
       }
-      console.log("Resume generated from your profile and uploaded.");
+      console.log("[Profile] Resume generated and uploaded successfully");
+      console.log(
+        "[Profile] Backend should now trigger resumeOptimizationAgent"
+      );
+      setAgentProcessing(true);
+      setTimeout(() => {
+        console.log("[Profile] Resume agent processing indicator hidden");
+        setAgentProcessing(false);
+      }, 5000);
     } catch (error) {
       console.error("Resume generation error:", error);
     } finally {
@@ -418,7 +483,11 @@ ${edu || ""}
   const handleEnhanceResume = async () => {
     setIsProcessingResume(true);
     try {
-      const email = editData.email || (typeof window !== "undefined" ? localStorage.getItem("userEmail") : "");
+      const email =
+        editData.email ||
+        (typeof window !== "undefined"
+          ? localStorage.getItem("userEmail")
+          : "");
 
       let serverResult = null;
       try {
@@ -437,8 +506,15 @@ ${edu || ""}
       // Fallback heuristics
       const skillsCount = (editData.skills || []).length;
       const expCount = (editData.experience || []).length;
-      const hasCerts = (editData.skills || []).some((s) => /cert/i.test(s.name));
-      const socialCount = [editData?.social?.github, editData?.social?.linkedin, editData?.social?.website, editData?.social?.twitter].filter(Boolean).length;
+      const hasCerts = (editData.skills || []).some((s) =>
+        /cert/i.test(s.name)
+      );
+      const socialCount = [
+        editData?.social?.github,
+        editData?.social?.linkedin,
+        editData?.social?.website,
+        editData?.social?.twitter,
+      ].filter(Boolean).length;
       let score = 50;
       score += Math.min(30, skillsCount * 3);
       score += Math.min(20, expCount * 5);
@@ -448,10 +524,34 @@ ${edu || ""}
       score = Math.max(0, Math.min(100, score));
 
       const suggestions = [];
-      if (skillsCount < 8) suggestions.push({ type: "improvement", title: "Add more skills", description: "List at least 8-12 skills relevant to your target roles.", priority: "high" });
-      if (expCount < 2) suggestions.push({ type: "missing", title: "Add more work experience", description: "Include internships, freelance or project experience.", priority: "high" });
-      if (!editData.social?.linkedin) suggestions.push({ type: "enhancement", title: "Add LinkedIn profile", description: "Recruiters often check your LinkedIn.", priority: "medium" });
-      suggestions.push({ type: "formatting", title: "Use consistent bullet points", description: "Start bullets with action verbs and quantify outcomes.", priority: "low" });
+      if (skillsCount < 8)
+        suggestions.push({
+          type: "improvement",
+          title: "Add more skills",
+          description:
+            "List at least 8-12 skills relevant to your target roles.",
+          priority: "high",
+        });
+      if (expCount < 2)
+        suggestions.push({
+          type: "missing",
+          title: "Add more work experience",
+          description: "Include internships, freelance or project experience.",
+          priority: "high",
+        });
+      if (!editData.social?.linkedin)
+        suggestions.push({
+          type: "enhancement",
+          title: "Add LinkedIn profile",
+          description: "Recruiters often check your LinkedIn.",
+          priority: "medium",
+        });
+      suggestions.push({
+        type: "formatting",
+        title: "Use consistent bullet points",
+        description: "Start bullets with action verbs and quantify outcomes.",
+        priority: "low",
+      });
 
       const enhancedResumeData = {
         ...resumeData,
@@ -461,7 +561,9 @@ ${edu || ""}
         analysis: {
           strengths: [
             ...(resumeData.analysis?.strengths || []),
-            skillsCount >= 8 ? "Comprehensive skills section" : "Clear, concise layout",
+            skillsCount >= 8
+              ? "Comprehensive skills section"
+              : "Clear, concise layout",
           ],
           weaknesses: [
             ...(resumeData.analysis?.weaknesses || []),
@@ -708,6 +810,13 @@ ${edu || ""}
           {error && (
             <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm">
               {error}
+            </div>
+          )}
+
+          {agentProcessing && (
+            <div className="mb-4 p-3 rounded border border-blue-200 bg-blue-50 text-blue-700 text-sm flex items-center gap-2">
+              <Sparkles className="h-4 w-4 animate-pulse" />
+              <span>🤖 Agents analyzing your profile...</span>
             </div>
           )}
 
@@ -1490,47 +1599,90 @@ ${edu || ""}
                     <CardContent>
                       <div className="space-y-4">
                         {editData.experience.map((exp, index) => (
-                          <div key={index} className="border border-grey-200 rounded-lg p-4">
+                          <div
+                            key={index}
+                            className="border border-grey-200 rounded-lg p-4"
+                          >
                             {isEditing ? (
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Position
+                                  </label>
                                   <Input
                                     value={exp.position || ""}
-                                    onChange={(e) => updateExperience(index, "position", e.target.value)}
+                                    onChange={(e) =>
+                                      updateExperience(
+                                        index,
+                                        "position",
+                                        e.target.value
+                                      )
+                                    }
                                     required
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Company
+                                  </label>
                                   <Input
                                     value={exp.company || ""}
-                                    onChange={(e) => updateExperience(index, "company", e.target.value)}
+                                    onChange={(e) =>
+                                      updateExperience(
+                                        index,
+                                        "company",
+                                        e.target.value
+                                      )
+                                    }
                                     required
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Duration
+                                  </label>
                                   <Input
                                     value={exp.duration || ""}
-                                    onChange={(e) => updateExperience(index, "duration", e.target.value)}
+                                    onChange={(e) =>
+                                      updateExperience(
+                                        index,
+                                        "duration",
+                                        e.target.value
+                                      )
+                                    }
                                     placeholder="Jan 2023 - Present"
                                     required
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Location
+                                  </label>
                                   <Input
                                     value={exp.location || ""}
-                                    onChange={(e) => updateExperience(index, "location", e.target.value)}
+                                    onChange={(e) =>
+                                      updateExperience(
+                                        index,
+                                        "location",
+                                        e.target.value
+                                      )
+                                    }
                                     required
                                   />
                                 </div>
                                 <div className="md:col-span-2">
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Description
+                                  </label>
                                   <textarea
                                     value={exp.description || ""}
-                                    onChange={(e) => updateExperience(index, "description", e.target.value)}
+                                    onChange={(e) =>
+                                      updateExperience(
+                                        index,
+                                        "description",
+                                        e.target.value
+                                      )
+                                    }
                                     rows={3}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                     placeholder="Describe your responsibilities and achievements"
@@ -1538,7 +1690,11 @@ ${edu || ""}
                                   />
                                 </div>
                                 <div className="flex justify-end md:col-span-2">
-                                  <Button variant="ghost" className="text-red-600" onClick={() => removeExperience(index)}>
+                                  <Button
+                                    variant="ghost"
+                                    className="text-red-600"
+                                    onClick={() => removeExperience(index)}
+                                  >
                                     <Trash2 className="h-4 w-4 mr-1" /> Remove
                                   </Button>
                                 </div>
@@ -1546,10 +1702,16 @@ ${edu || ""}
                             ) : (
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <h4 className="font-medium text-grey-900">{exp.position}</h4>
+                                  <h4 className="font-medium text-grey-900">
+                                    {exp.position}
+                                  </h4>
                                   <p className="text-blue-600">{exp.company}</p>
-                                  <p className="text-sm text-grey-600">{exp.duration} • {exp.location}</p>
-                                  <p className="text-sm text-grey-700 mt-2">{exp.description}</p>
+                                  <p className="text-sm text-grey-600">
+                                    {exp.duration} • {exp.location}
+                                  </p>
+                                  <p className="text-sm text-grey-700 mt-2">
+                                    {exp.description}
+                                  </p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Briefcase className="h-5 w-5 text-grey-400" />
@@ -1568,7 +1730,9 @@ ${edu || ""}
                       <div className="flex items-center justify-between">
                         <div>
                           <CardTitle>Education</CardTitle>
-                          <CardDescription>Your educational background</CardDescription>
+                          <CardDescription>
+                            Your educational background
+                          </CardDescription>
                         </div>
                         {isEditing && (
                           <Button variant="outlined" onClick={addEducation}>
@@ -1580,27 +1744,84 @@ ${edu || ""}
                     <CardContent>
                       <div className="space-y-4">
                         {editData.education.map((edu, index) => (
-                          <div key={index} className="border border-grey-200 rounded-lg p-4">
+                          <div
+                            key={index}
+                            className="border border-grey-200 rounded-lg p-4"
+                          >
                             {isEditing ? (
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Degree</label>
-                                  <Input value={edu.degree || ""} onChange={(e) => updateEducation(index, "degree", e.target.value)} required/>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Degree
+                                  </label>
+                                  <Input
+                                    value={edu.degree || ""}
+                                    onChange={(e) =>
+                                      updateEducation(
+                                        index,
+                                        "degree",
+                                        e.target.value
+                                      )
+                                    }
+                                    required
+                                  />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
-                                  <Input value={edu.school || ""} onChange={(e) => updateEducation(index, "school", e.target.value)} required/>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    School
+                                  </label>
+                                  <Input
+                                    value={edu.school || ""}
+                                    onChange={(e) =>
+                                      updateEducation(
+                                        index,
+                                        "school",
+                                        e.target.value
+                                      )
+                                    }
+                                    required
+                                  />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-                                  <Input value={edu.year || ""} onChange={(e) => updateEducation(index, "year", e.target.value)} placeholder="2024" required/>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Year
+                                  </label>
+                                  <Input
+                                    value={edu.year || ""}
+                                    onChange={(e) =>
+                                      updateEducation(
+                                        index,
+                                        "year",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="2024"
+                                    required
+                                  />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">GPA</label>
-                                  <Input value={edu.gpa || ""} onChange={(e) => updateEducation(index, "gpa", e.target.value)} placeholder="e.g., 3.8/4.0" required/>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    GPA
+                                  </label>
+                                  <Input
+                                    value={edu.gpa || ""}
+                                    onChange={(e) =>
+                                      updateEducation(
+                                        index,
+                                        "gpa",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="e.g., 3.8/4.0"
+                                    required
+                                  />
                                 </div>
                                 <div className="flex justify-end md:col-span-2">
-                                  <Button variant="ghost" className="text-red-600" onClick={() => removeEducation(index)}>
+                                  <Button
+                                    variant="ghost"
+                                    className="text-red-600"
+                                    onClick={() => removeEducation(index)}
+                                  >
                                     <Trash2 className="h-4 w-4 mr-1" /> Remove
                                   </Button>
                                 </div>
@@ -1608,9 +1829,13 @@ ${edu || ""}
                             ) : (
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <h4 className="font-medium text-grey-900">{edu.degree}</h4>
+                                  <h4 className="font-medium text-grey-900">
+                                    {edu.degree}
+                                  </h4>
                                   <p className="text-blue-600">{edu.school}</p>
-                                  <p className="text-sm text-grey-600">{edu.year} • GPA: {edu.gpa}</p>
+                                  <p className="text-sm text-grey-600">
+                                    {edu.year} • GPA: {edu.gpa}
+                                  </p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <GraduationCap className="h-5 w-5 text-grey-400" />

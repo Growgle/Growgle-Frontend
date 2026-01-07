@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
   Briefcase,
@@ -22,6 +23,7 @@ import {
   Award,
   BarChart3,
   Map,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -32,6 +34,7 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import AuthGuard from "@/components/AuthGuard";
+import { agentResultsApi } from "@/lib/services/agentResultsApi";
 
 // const jobListings = [
 //   {
@@ -147,38 +150,20 @@ const regionData = [
   { city: "Chennai", jobs: 520, growth: "+14%" },
 ];
 
-const interviewPrepData = {
-  commonQuestions: [
-    "Explain the event loop in JavaScript",
-    "How do you optimize React performance?",
-    "Describe your experience with microservices",
-    "What's your approach to system design?",
-    "How do you handle technical debt?",
-  ],
-  keySkillsFocus: [
-    "System Design",
-    "Data Structures",
-    "Problem Solving",
-    "Communication",
-  ],
-  tipsByCompany: {
-    Google: "Focus on algorithms and scalability",
-    Microsoft: "Emphasize product thinking and user experience",
-    Amazon: "Prepare for leadership principles questions",
-  },
-};
-
 export default function CareersPage() {
+  const { data: session } = useSession();
   const [jobListings, setJobListings] = useState([]);
+  const [featuredJobs, setFeaturedJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
-  // Use job_id from API for identifiers
-  const [savedJobs, setSavedJobs] = useState(
-    jobListings.filter((job) => job.saved).map((j) => j.job_id)
-  );
+  const [savedJobs, setSavedJobs] = useState([]);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const [showInterviewPrep, setShowInterviewPrep] = useState(false);
+  const [loadingJobs, setLoadingJobs] = useState(true);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [interviewPrepData, setInterviewPrepData] = useState({});
+  const [loadingPrepData, setLoadingPrepData] = useState(false);
 
   // Filters
   const [selectedSkills, setSelectedSkills] = useState([]);
@@ -199,9 +184,7 @@ export default function CareersPage() {
   ];
   const experienceLevels = ["all", "Entry Level", "Mid Level", "Senior Level"];
   const workTypes = ["all", "Remote", "Hybrid", "On-site"];
-  const regions = [
-    "all",
-  ];
+  const regions = ["all"];
   const industries = [
     "all",
     "Technology",
@@ -212,8 +195,64 @@ export default function CareersPage() {
   ];
 
   useEffect(() => {
-    async function fetchLatestJobs() {
+    async function fetchFeaturedJobs() {
       try {
+        setLoadingFeatured(true);
+        console.log("🤖 [Careers] Fetching AI-matched featured jobs...");
+
+        const token =
+          session?.user?.token || localStorage.getItem("accessToken");
+        if (!token) {
+          console.log("⚠️ [Careers] No auth token - skipping featured jobs");
+          setLoadingFeatured(false);
+          return;
+        }
+
+        const matchesRes = await agentResultsApi.getJobMatches(token, "new");
+        console.log("✓ [Careers] Featured Jobs Response:", matchesRes);
+
+        if (matchesRes?.jobMatches && matchesRes.jobMatches.length > 0) {
+          const agentJobs = matchesRes.jobMatches.map((match) => ({
+            id: match._id,
+            job_id: match.jobId,
+            title: match.jobTitle,
+            company_name: match.company,
+            location: match.location,
+            employment_type: match.employmentType || "Full-time",
+            description: match.description || match.matchReason,
+            fitScore: Math.round(match.relevanceScore * 100),
+            whyThisJob: match.matchReason,
+            requiredSkills: match.requiredSkills || [],
+            apply_link: match.applyLink,
+            salary: match.salary,
+            saved: match.status === "viewed",
+            agentMatched: true,
+            matchStatus: match.status,
+          }));
+          console.log(`🎯 [Careers] Loaded ${agentJobs.length} featured jobs`);
+          setFeaturedJobs(agentJobs);
+        } else {
+          console.log("💡 [Careers] No featured job matches found");
+          setFeaturedJobs([]);
+        }
+      } catch (err) {
+        console.error("✗ [Careers] Error fetching featured jobs:", err);
+        setFeaturedJobs([]);
+      } finally {
+        setLoadingFeatured(false);
+      }
+    }
+
+    fetchFeaturedJobs();
+  }, [session]);
+
+  // Fetch regular job listings from external API
+  useEffect(() => {
+    async function fetchRegularJobs() {
+      try {
+        setLoadingJobs(true);
+        console.log("🔄 [Careers] Fetching regular job listings...");
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_PROMPT_URL}/jobs/latest?limit=25`
         );
@@ -223,14 +262,17 @@ export default function CareersPage() {
         }
 
         const data = await response.json();
-        console.log("data:", data);
-        setJobListings(data.jobs);
+        console.log("✓ [Careers] Regular Jobs Response:", data);
+        setJobListings(data.jobs || []);
       } catch (err) {
-        console.error("Error fetching latest jobs:", err);
+        console.error("✗ [Careers] Error fetching regular jobs:", err);
+        setJobListings([]);
+      } finally {
+        setLoadingJobs(false);
       }
     }
 
-    fetchLatestJobs();
+    fetchRegularJobs();
   }, []);
 
   const filteredJobs = useMemo(() => {
@@ -239,8 +281,7 @@ export default function CareersPage() {
     jobs = jobs.map((j) => {
       j.requiredSkills = j.requiredSkills || [];
       j.fitScore = j.fitScore || Math.floor(Math.random() * 21) + 80;
-      if ((j.location) && !(regions.includes(j.location))) {
-        console.log(j.location, regions);
+      if (j.location && !regions.includes(j.location)) {
         regions.push(j.location);
       }
       return j;
@@ -291,15 +332,117 @@ export default function CareersPage() {
     showSavedOnly,
     savedJobs,
     jobListings,
-    regions
+    regions,
   ]);
 
-  const toggleSaveJob = (jobId) => {
+  const toggleSaveJob = async (jobId) => {
+    const job =
+      featuredJobs.find((j) => j.job_id === jobId || j.id === jobId) ||
+      jobListings.find((j) => j.job_id === jobId || j.id === jobId);
+
+    if (job?.agentMatched) {
+      const token = session?.user?.token || localStorage.getItem("accessToken");
+      if (token) {
+        const newStatus = savedJobs.includes(jobId) ? "new" : "viewed";
+        try {
+          console.log(
+            `💾 [Careers] Toggling save for job ${jobId}: ${newStatus}`
+          );
+          await agentResultsApi.updateJobMatchStatus(token, job.id, newStatus);
+          console.log(`✓ [Careers] Job saved status updated`);
+        } catch (error) {
+          console.error("✗ [Careers] Failed to update job status:", error);
+        }
+      }
+    }
+
     setSavedJobs((prev) =>
       prev.includes(jobId)
         ? prev.filter((id) => id !== jobId)
         : [...prev, jobId]
     );
+  };
+
+  const handleJobAction = async (matchId, status) => {
+    const token = session?.user?.token || localStorage.getItem("accessToken");
+    if (token) {
+      try {
+        console.log(
+          `🔄 [Careers] Updating job match (${matchId}) to status: ${status}`
+        );
+        const result = await agentResultsApi.updateJobMatchStatus(
+          token,
+          matchId,
+          status
+        );
+        console.log(
+          `✓ [Careers] Job Match Update (${matchId} -> ${status}):`,
+          result
+        );
+
+        // Update featured jobs state
+        setFeaturedJobs((prev) =>
+          prev.map((m) =>
+            m.id === matchId ? { ...m, matchStatus: status } : m
+          )
+        );
+
+        setJobListings((prev) =>
+          prev.map((m) =>
+            m.id === matchId ? { ...m, matchStatus: status } : m
+          )
+        );
+      } catch (error) {
+        console.error("✗ [Careers] Failed to update job match status:", error);
+      }
+    } else {
+      console.error("⚠️ [Careers] No auth token available for job action");
+    }
+  };
+
+  const fetchInterviewPrepData = async (job) => {
+    const jobKey = job.job_id || job.id;
+    if (interviewPrepData[jobKey]) {
+      return;
+    }
+
+    setLoadingPrepData(true);
+    try {
+      const { apply_link, ingested_at, ...jobData } = job;
+      console.log(`https://career-insights-1010849458554.us-central1.run.app/api/interview-prep`)
+      const response = await fetch(
+        `https://career-insights-1010849458554.us-central1.run.app/api/interview-prep`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(jobData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const prepData = await response.json();
+      console.log(prepData.interviewPrepData);
+      setInterviewPrepData((prev) => ({
+        ...prev,
+        [jobKey]: prepData.interviewPrepData,
+      }));
+    } catch (error) {
+      console.error("Error fetching interview prep data:", error);
+      setInterviewPrepData((prev) => ({
+        ...prev,
+        [jobKey]: {
+          commonQuestions: [],
+          keySkillsFocus: [],
+        },
+      }));
+    } finally {
+      setLoadingPrepData(false);
+    }
   };
 
   const handleJobClick = (job) => {
@@ -596,156 +739,361 @@ export default function CareersPage() {
               </Card>
             </motion.div>
 
-            {/* Main Job Listings */}
+            {/* Main Content Area */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="lg:col-span-2 space-y-4"
+              className="lg:col-span-2 space-y-6"
             >
-              {filteredJobs.length === 0 ? (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Briefcase className="h-16 w-16 text-grey-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-grey-900 mb-2">
-                      No jobs found
-                    </h3>
-                    <p className="text-grey-600 mb-4">
-                      Try adjusting your filters or search criteria
-                    </p>
-                    {hasActiveFilters && (
-                      <Button onClick={clearAllFilters}>
-                        Clear All Filters
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                filteredJobs.map((job, index) => (
-                  <motion.div
-                    key={job.job_id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <Card
-                      className={`hover:shadow-lg transition-all cursor-pointer ${
-                        selectedJob?.job_id === job.job_id
-                          ? "ring-2 ring-blue-500"
-                          : ""
-                      }`}
-                      onClick={() => handleJobClick(job)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-2">
-                              <h3 className="text-lg font-semibold text-grey-900">
-                                {job.title}
-                              </h3>
-                              <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                                {job.fitScore}% Match
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-4 text-sm text-grey-600 mb-3">
-                              <div className="flex items-center">
-                                <Building2 className="h-4 w-4 mr-1" />
-                                {job.company_name}
+              {/* Featured Jobs Section */}
+              {featuredJobs.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-5 w-5 text-yellow-500 fill-current" />
+                      <h2 className="text-xl font-bold text-grey-900">
+                        Featured Jobs - AI Matched for You
+                      </h2>
+                    </div>
+                    <span className="text-sm text-grey-600 bg-yellow-50 px-3 py-1 rounded-full">
+                      {featuredJobs.length}{" "}
+                      {featuredJobs.length === 1 ? "match" : "matches"}
+                    </span>
+                  </div>
+                  <div className="space-y-4">
+                    {featuredJobs.map((job, index) => (
+                      <motion.div
+                        key={job.job_id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <Card
+                          className="hover:shadow-xl transition-all cursor-pointer border-2 border-yellow-200 bg-gradient-to-r from-yellow-50 to-white"
+                          onClick={() => handleJobClick(job)}
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-bold rounded uppercase">
+                                    Featured
+                                  </span>
+                                  <h3 className="text-lg font-semibold text-grey-900">
+                                    {job.title}
+                                  </h3>
+                                  <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                                    {job.fitScore}% Match
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-4 text-sm text-grey-600 mb-3">
+                                  <div className="flex items-center">
+                                    <Building2 className="h-4 w-4 mr-1" />
+                                    {job.company_name}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <MapPin className="h-4 w-4 mr-1" />
+                                    {job.location}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Clock className="h-4 w-4 mr-1" />
+                                    {job.employment_type}
+                                  </div>
+                                  {job.salary && (
+                                    <div className="flex items-center">
+                                      <DollarSign className="h-4 w-4 mr-1" />
+                                      {job.salary}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <div className="flex items-center">
-                                <MapPin className="h-4 w-4 mr-1" />
-                                {job.location}
-                              </div>
-                              <div className="flex items-center">
-                                <Clock className="h-4 w-4 mr-1" />
-                                {job.employment_type}
-                              </div>
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleSaveJob(job.job_id);
-                            }}
-                            className={`p-2 rounded-full transition-colors ${
-                              savedJobs.includes(job.job_id)
-                                ? "bg-red-50 text-red-600"
-                                : "bg-grey-100 text-grey-600 hover:bg-grey-200"
-                            }`}
-                          >
-                            <Heart
-                              className={`h-5 w-5 ${
-                                savedJobs.includes(job.job_id)
-                                  ? "fill-current"
-                                  : ""
-                              }`}
-                            />
-                          </button>
-                        </div>
-
-                        <p className="text-sm text-grey-700 mb-4 line-clamp-2">
-                          {job.description}
-                        </p>
-
-                        {/* Why This Job Highlight */}
-                        <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
-                          <div className="flex items-start">
-                            <Zap className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="text-xs font-medium text-blue-900 mb-1">
-                                Why this job is a great fit
-                              </p>
-                              <p className="text-xs text-blue-800">
-                                {job.whyThisJob}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Skills */}
-                        <div className="mb-4">
-                          <div className="flex flex-wrap gap-2">
-                            {job.requiredSkills.map((skill, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-1 bg-grey-100 text-grey-700 text-xs rounded"
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleSaveJob(job.job_id);
+                                }}
+                                className={`p-2 rounded-full transition-colors ${
+                                  savedJobs.includes(job.job_id)
+                                    ? "bg-red-50 text-red-600"
+                                    : "bg-grey-100 text-grey-600 hover:bg-grey-200"
+                                }`}
                               >
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
+                                <Heart
+                                  className={`h-5 w-5 ${
+                                    savedJobs.includes(job.job_id)
+                                      ? "fill-current"
+                                      : ""
+                                  }`}
+                                />
+                              </button>
+                            </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex items-center space-x-3">
-                          <Button
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(job.apply_link, "_blank");
-                            }}
-                            className="flex-1"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Apply Now
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleJobClick(job);
-                            }}
-                          >
-                            <BarChart3 className="h-4 w-4 mr-2" />
-                            View Insights
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))
+                            <p className="text-sm text-grey-700 mb-4 line-clamp-2">
+                              {job.description}
+                            </p>
+
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
+                              <div className="flex items-start">
+                                <Zap className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                                <div>
+                                  <p className="text-xs font-medium text-blue-900 mb-1">
+                                    Why this job is a great fit
+                                  </p>
+                                  <p className="text-xs text-blue-800">
+                                    {job.whyThisJob}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {job.requiredSkills.length > 0 && (
+                              <div className="mb-4">
+                                <div className="flex flex-wrap gap-2">
+                                  {job.requiredSkills.map((skill, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="px-2 py-1 bg-grey-100 text-grey-700 text-xs rounded"
+                                    >
+                                      {skill}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center space-x-3">
+                              <Button
+                                variant={
+                                  job.matchStatus === "applied"
+                                    ? "primary"
+                                    : "outlined"
+                                }
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleJobAction(job.id, "applied");
+                                }}
+                                className="flex-1"
+                              >
+                                {job.matchStatus === "applied"
+                                  ? "✓ Applied"
+                                  : "Mark Applied"}
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleJobAction(job.id, "rejected");
+                                }}
+                              >
+                                Not Interested
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                  <div className="my-8 border-t border-grey-200"></div>
+                </div>
               )}
+
+              {/* Regular Job Listings */}
+              <div>
+                {featuredJobs.length > 0 && (
+                  <h2 className="text-xl font-bold text-grey-900 mb-4">
+                    More Opportunities
+                  </h2>
+                )}
+                {loadingJobs ? (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <Loader2 className="h-16 w-16 text-grey-300 mx-auto mb-4 animate-spin" />
+                      <p className="text-grey-600">
+                        Loading job opportunities...
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : filteredJobs.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <Briefcase className="h-16 w-16 text-grey-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-grey-900 mb-2">
+                        No jobs found
+                      </h3>
+                      <p className="text-grey-600 mb-4">
+                        Try adjusting your filters or search criteria
+                      </p>
+                      {hasActiveFilters && (
+                        <Button onClick={clearAllFilters}>
+                          Clear All Filters
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ) : (
+                  filteredJobs.map((job, index) => (
+                    <motion.div
+                      key={job.job_id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <Card
+                        className={`hover:shadow-lg transition-all cursor-pointer ${
+                          selectedJob?.job_id === job.job_id
+                            ? "ring-2 ring-blue-500"
+                            : ""
+                        }`}
+                        onClick={() => handleJobClick(job)}
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <h3 className="text-lg font-semibold text-grey-900">
+                                  {job.title}
+                                </h3>
+                                <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                                  {job.fitScore}% Match
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-4 text-sm text-grey-600 mb-3">
+                                <div className="flex items-center">
+                                  <Building2 className="h-4 w-4 mr-1" />
+                                  {job.company_name}
+                                </div>
+                                <div className="flex items-center">
+                                  <MapPin className="h-4 w-4 mr-1" />
+                                  {job.location}
+                                </div>
+                                <div className="flex items-center">
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  {job.employment_type}
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSaveJob(job.job_id);
+                              }}
+                              className={`p-2 rounded-full transition-colors ${
+                                savedJobs.includes(job.job_id)
+                                  ? "bg-red-50 text-red-600"
+                                  : "bg-grey-100 text-grey-600 hover:bg-grey-200"
+                              }`}
+                            >
+                              <Heart
+                                className={`h-5 w-5 ${
+                                  savedJobs.includes(job.job_id)
+                                    ? "fill-current"
+                                    : ""
+                                }`}
+                              />
+                            </button>
+                          </div>
+
+                          <p className="text-sm text-grey-700 mb-4 line-clamp-2">
+                            {job.description}
+                          </p>
+
+                          {/* Why This Job Highlight */}
+                          <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
+                            <div className="flex items-start">
+                              <Zap className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs font-medium text-blue-900 mb-1">
+                                  Why this job is a great fit
+                                </p>
+                                <p className="text-xs text-blue-800">
+                                  {job.whyThisJob}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Skills */}
+                          <div className="mb-4">
+                            <div className="flex flex-wrap gap-2">
+                              {job.requiredSkills.map((skill, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-1 bg-grey-100 text-grey-700 text-xs rounded"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center space-x-3">
+                            {job.agentMatched ? (
+                              <>
+                                <Button
+                                  variant={
+                                    job.matchStatus === "applied"
+                                      ? "primary"
+                                      : "outlined"
+                                  }
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleJobAction(job.id, "applied");
+                                  }}
+                                  className="flex-1"
+                                >
+                                  {job.matchStatus === "applied"
+                                    ? "✓ Applied"
+                                    : "Mark Applied"}
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleJobAction(job.id, "rejected");
+                                  }}
+                                >
+                                  Not Interested
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(job.apply_link, "_blank");
+                                  }}
+                                  className="flex-1"
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-2" />
+                                  Apply Now
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleJobClick(job);
+                                  }}
+                                >
+                                  <BarChart3 className="h-4 w-4 mr-2" />
+                                  View Insights
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))
+                )}
+              </div>
             </motion.div>
 
             {/* Job Insights Sidebar */}
@@ -798,7 +1146,7 @@ export default function CareersPage() {
                       </div>
 
                       {/* Growth Trend */}
-                      <div className="border-t border-grey-200 pt-4">
+                      {/*<div className="border-t border-grey-200 pt-4">
                         <div className="flex items-center text-sm text-grey-600 mb-1">
                           <TrendingUp className="h-4 w-4 mr-1 text-green-600" />
                           Career Growth Trend
@@ -806,7 +1154,7 @@ export default function CareersPage() {
                         <p className="text-sm text-grey-900">
                           {selectedJob.growthTrend}
                         </p>
-                      </div>
+                      </div>*/}
 
                       {/* Required Skills */}
                       <div className="border-t border-grey-200 pt-4">
@@ -826,7 +1174,7 @@ export default function CareersPage() {
                       </div>
 
                       {/* Related Learning Paths */}
-                      <div className="border-t border-grey-200 pt-4">
+                      {/*<div className="border-t border-grey-200 pt-4">
                         <p className="text-sm font-medium text-grey-900 mb-2">
                           Recommended Learning Paths
                         </p>
@@ -844,20 +1192,24 @@ export default function CareersPage() {
                             Leadership in Tech
                           </div>
                         </div>
-                      </div>
+                      </div>*/}
 
                       <Button
                         variant="outlined"
                         className="w-full"
-                        onClick={() => setShowInterviewPrep(!showInterviewPrep)}
+                        onClick={() => {
+                          if (!showInterviewPrep) {
+                            fetchInterviewPrepData(selectedJob);
+                          }
+                          setShowInterviewPrep(!showInterviewPrep);
+                        }}
                       >
                         <MessageSquare className="h-4 w-4 mr-2" />
-                        Interview Preparation
+                        Job Prep
                       </Button>
                     </CardContent>
                   </Card>
 
-                  {/* Interview Preparation */}
                   {showInterviewPrep && (
                     <Card>
                       <CardHeader>
@@ -869,55 +1221,78 @@ export default function CareersPage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        {/* Common Questions */}
-                        <div>
-                          <p className="text-sm font-medium text-grey-900 mb-2">
-                            Common Questions
-                          </p>
-                          <ul className="space-y-2">
-                            {interviewPrepData.commonQuestions.map((q, idx) => (
-                              <li
-                                key={idx}
-                                className="text-xs text-grey-700 flex"
-                              >
-                                <span className="mr-2">•</span>
-                                <span>{q}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {/* Key Skills Focus */}
-                        <div className="border-t border-grey-200 pt-4">
-                          <p className="text-sm font-medium text-grey-900 mb-2">
-                            Key Skills Focus
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {interviewPrepData.keySkillsFocus.map(
-                              (skill, idx) => (
-                                <span
-                                  key={idx}
-                                  className="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded"
-                                >
-                                  {skill}
-                                </span>
-                              )
-                            )}
+                        {loadingPrepData ? (
+                          <div className="text-center py-8">
+                            <Loader2 className="h-8 w-8 text-grey-300 mx-auto mb-2 animate-spin" />
+                            <p className="text-sm text-grey-600">
+                              Loading prep data...
+                            </p>
                           </div>
-                        </div>
+                        ) : (
+                          interviewPrepData[
+                            selectedJob.job_id || selectedJob.id
+                          ] && (
+                            <>
+                              <div>
+                                <p className="text-sm font-medium text-grey-900 mb-2">
+                                  Common Questions
+                                </p>
+                                <ul className="space-y-2">
+                                  {interviewPrepData[
+                                    selectedJob.job_id || selectedJob.id
+                                  ].commonQuestions?.slice(0,5).map((q, idx) => (
+                                    <li
+                                      key={idx}
+                                      className="text-xs text-grey-700 flex"
+                                    >
+                                      <span className="mr-2">•</span>
+                                      <span>{q}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
 
-                        {/* Company Tips */}
-                        <div className="border-t border-grey-200 pt-4">
-                          <p className="text-sm font-medium text-grey-900 mb-2">
-                            Company Summary
-                          </p>
-                          <p className="text-xs text-grey-700">
-                            {interviewPrepData.tipsByCompany[
-                              selectedJob.company_name.split(" ")[0]
-                            ] ||
-                              "Research the company culture and recent news before your interview."}
-                          </p>
-                        </div>
+                              <div className="border-t border-grey-200 pt-4">
+                                <p className="text-sm font-medium text-grey-900 mb-2">
+                                  Key Skills Focus
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  {interviewPrepData[
+                                    selectedJob.job_id || selectedJob.id
+                                  ].keySkillsFocus?.slice(0,5).map((skill, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded"
+                                    >
+                                      {skill}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {interviewPrepData[
+                                selectedJob.job_id || selectedJob.id
+                              ].tipsByCompany?.[
+                                selectedJob.company_name.split(" ")[0]
+                              ] && (
+                                <div className="border-t border-grey-200 pt-4">
+                                  <p className="text-sm font-medium text-grey-900 mb-2">
+                                    Company Summary
+                                  </p>
+                                  <p className="text-xs text-grey-700">
+                                    {
+                                      interviewPrepData[
+                                        selectedJob.job_id || selectedJob.id
+                                      ].tipsByCompany[
+                                        selectedJob.company_name.split(" ")[0]
+                                      ]
+                                    }
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          )
+                        )}
                       </CardContent>
                     </Card>
                   )}
@@ -974,7 +1349,13 @@ export default function CareersPage() {
                   <CardTitle className="text-lg">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button variant="outlined" onClick={() => {window.open('profile')}} className="w-full justify-start">
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      window.open("profile");
+                    }}
+                    className="w-full justify-start"
+                  >
                     <Award className="h-4 w-4 mr-2" />
                     Update Resume
                   </Button>

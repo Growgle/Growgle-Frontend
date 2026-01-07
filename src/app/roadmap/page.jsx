@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import AuthGuard from "@/components/AuthGuard";
 import {
   Plus,
@@ -23,6 +24,7 @@ import {
 
 const RoadmapDashboard = () => {
   const router = useRouter();
+  const { data: session } = useSession();
   const [roadmaps, setRoadmaps] = useState([]);
   const [roadmapsLoading, setRoadmapsLoading] = useState(true);
   const [roadmapsError, setRoadmapsError] = useState("");
@@ -58,7 +60,21 @@ const RoadmapDashboard = () => {
       }
     };
     loadRoadmaps();
-  }, []);
+
+    console.log(
+      "[Roadmap] Setting up auto-refresh every 30 seconds to check for agent updates"
+    );
+    const interval = setInterval(() => {
+      if (session?.user?.token) {
+        console.log(
+          "[Roadmap] Auto-refresh: Checking for skillGapRoadmapAgent updates..."
+        );
+        loadRoadmaps();
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [session]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {

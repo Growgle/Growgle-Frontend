@@ -27,6 +27,7 @@ import { CalendarView } from "@/components/CalendarView";
 import AuthGuard from "@/components/AuthGuard";
 import { verifyToken, refreshToken } from "@/lib/services/authApi";
 import { getDashboardData } from "@/lib/services/profileApi";
+import { agentResultsApi } from "@/lib/services/agentResultsApi";
 
 export default function DashboardPage() {
   const [displayName, setDisplayName] = useState("");
@@ -47,6 +48,10 @@ export default function DashboardPage() {
     skillProgress: [],
   });
   const [loadingDashboard, setLoadingDashboard] = useState(true);
+  const [careerPlan, setCareerPlan] = useState(null);
+  const [jobMatches, setJobMatches] = useState([]);
+  const [agentStatus, setAgentStatus] = useState([]);
+  const [loadingAgents, setLoadingAgents] = useState(true);
   const isAuthed = status === "authenticated";
 
   useEffect(() => {
@@ -111,6 +116,89 @@ export default function DashboardPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAgentResults() {
+      console.log("[Dashboard] Session check:", {
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        hasToken: !!session?.user?.token,
+        session: session,
+      });
+
+      const token =
+        session?.user?.token ||
+        (typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null);
+
+      if (token) {
+        console.log("[Dashboard] 🔄 Loading agent results... (token found)");
+        console.log(
+          "[Dashboard] Token source:",
+          session?.user?.token ? "session" : "localStorage"
+        );
+        console.log(
+          "[Dashboard] Token preview:",
+          token.substring(0, 20) + "..."
+        );
+        try {
+          setLoadingAgents(true);
+          const [planRes, jobsRes, statusRes] = await Promise.all([
+            agentResultsApi.getCareerPlan(token).catch((err) => {
+              console.error(
+                "[Dashboard] ✗ Career plan fetch failed:",
+                err.message
+              );
+              console.error(
+                "[Dashboard] Backend may not have agent routes implemented yet"
+              );
+              return { careerPlan: null };
+            }),
+            agentResultsApi.getJobMatches(token, "new").catch((err) => {
+              console.error(
+                "[Dashboard] ✗ Job matches fetch failed:",
+                err.message
+              );
+              return { jobMatches: [] };
+            }),
+            agentResultsApi.getAgentStatus(token).catch((err) => {
+              console.error(
+                "[Dashboard] ✗ Agent status fetch failed:",
+                err.message
+              );
+              return { executions: [] };
+            }),
+          ]);
+          if (!cancelled) {
+            console.log("[Dashboard] Agent Results:", {
+              careerPlan: planRes.careerPlan,
+              jobMatches: jobsRes.jobMatches,
+              agentExecutions: statusRes.executions,
+            });
+            setCareerPlan(planRes.careerPlan);
+            setJobMatches(jobsRes.jobMatches || []);
+            setAgentStatus(statusRes.executions || []);
+          }
+        } catch (error) {
+          console.error("[Dashboard] Failed to load agent results:", error);
+        } finally {
+          if (!cancelled) setLoadingAgents(false);
+        }
+      } else {
+        console.error("[Dashboard] ❌ NO TOKEN FOUND!");
+        console.error(
+          "[Dashboard] Checked: session.user.token and localStorage.accessToken"
+        );
+        console.error("[Dashboard] You may need to logout and login again");
+      }
+    }
+    loadAgentResults();
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
 
   useEffect(() => {
     if (!isAuthed) return;
@@ -292,6 +380,94 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </motion.div>
+
+              {careerPlan && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
+                >
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Your Career Plan</CardTitle>
+                      <CardDescription>
+                        Generated{" "}
+                        {new Date(careerPlan.generatedAt).toLocaleDateString()}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                          <div
+                            className="border border-grey-200 rounded-lg p-4"
+                          >
+                            <h4 className="font-semibold text-grey-900 mb-2">
+                              {careerPlan.planContent.planName || `Career Plan`}
+                            </h4>
+                            <p className="text-sm text-grey-600 mb-2">
+                              {careerPlan.planContent.description}
+                            </p>
+                            <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                              {careerPlan.planContent.duration}
+                            </span>
+                          </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+
+              {jobMatches.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <Card>
+                    <CardHeader>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <CardTitle>Recommended Jobs</CardTitle>
+                          <CardDescription>
+                            AI-matched opportunities for you
+                          </CardDescription>
+                        </div>
+                        <Button
+                          variant="outlined"
+                          size="sm"
+                          onClick={() => (window.location.href = "/careers")}
+                        >
+                          View All
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {jobMatches.slice(0, 5).map((match) => (
+                          <div
+                            key={match._id}
+                            className="border border-grey-200 rounded-lg p-3 hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium text-grey-900">
+                                {match.jobTitle}
+                              </h4>
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                {Math.round(match.relevanceScore * 100)}% match
+                              </span>
+                            </div>
+                            <p className="text-sm text-grey-600 mb-1">
+                              {match.company} • {match.location}
+                            </p>
+                            <p className="text-xs text-grey-500">
+                              {match.matchReason}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
 
               {/* Upcoming Milestones */}
               <motion.div

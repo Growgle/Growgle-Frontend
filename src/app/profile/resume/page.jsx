@@ -1,8 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
 import AuthGuard from "@/components/AuthGuard";
-import { compileLatex as compileLatexApi, uploadResume as uploadResumeApi, getResumeSource as getResumeSourceApi } from "@/lib/services/profileApi";
+import {
+  compileLatex as compileLatexApi,
+  uploadResume as uploadResumeApi,
+  getResumeSource as getResumeSourceApi,
+} from "@/lib/services/profileApi";
+import { agentResultsApi } from "@/lib/services/agentResultsApi";
 
 const DEFAULT_TEMPLATE = `\\documentclass[11pt]{article}
 \\usepackage[margin=1in]{geometry}
@@ -43,6 +49,9 @@ export default function ResumeEditorPage() {
   const [isCompiling, setIsCompiling] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [livePreview, setLivePreview] = useState(false);
+  const [resumeAnalysis, setResumeAnalysis] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const { data: session } = useSession();
   const editorTextAreaRef = useRef(null);
   const debounceRef = useRef(null);
   const lastBlobUrlRef = useRef("");
@@ -55,29 +64,37 @@ export default function ResumeEditorPage() {
       if (typeof data === "string") {
         try {
           const j = JSON.parse(data);
-          if (j?.latex && typeof j.latex === "string" && j.latex.trim()) return j.latex;
+          if (j?.latex && typeof j.latex === "string" && j.latex.trim())
+            return j.latex;
         } catch {
           if (data.trim()) return data;
         }
       }
-      if (typeof data === "object" && data?.latex && typeof data.latex === "string") return data.latex;
+      if (
+        typeof data === "object" &&
+        data?.latex &&
+        typeof data.latex === "string"
+      )
+        return data.latex;
     } catch {}
     try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("resumeEditor.latex") : null;
+      const saved =
+        typeof window !== "undefined"
+          ? localStorage.getItem("resumeEditor.latex")
+          : null;
       if (saved && saved.trim()) return saved;
     } catch {}
     return null;
   };
 
-  const compileToBlob = async () => {    
+  const compileToBlob = async () => {
     try {
       if (typeof compileLatexApi === "function") {
         const res = await compileLatexApi(buildLatexForCompile(latex));
         console.log("compileLatexApi response:", res);
         if (res?.data) return res.data;
       }
-    } catch (_) {
-    }
+    } catch (_) {}
   };
 
   const buildLatexForCompile = (src) => {
@@ -114,6 +131,24 @@ ${src}
       if (lastBlobUrlRef.current) URL.revokeObjectURL(lastBlobUrlRef.current);
     };
   }, [template]);
+
+  useEffect(() => {
+    const loadResumeAnalysis = async () => {
+      console.log("[Resume Page] Loading resume analysis from agents...");
+      setAnalysisLoading(true);
+      try {
+        const token = session?.user?.token || localStorage.getItem("accessToken");
+        const result = await agentResultsApi.getResumeAnalysis(token);
+        console.log("[Resume Page] Resume Analysis Result:", result);
+        setResumeAnalysis(result.resumeAnalysis);
+      } catch (error) {
+        console.error("[Resume Page] Failed to load resume analysis:", error);
+      } finally {
+        setAnalysisLoading(false);
+      }
+    };
+    loadResumeAnalysis();
+  }, [session]);
 
   const scheduleCompile = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -179,9 +214,7 @@ ${src}
         <div className="mx-auto max-w-7xl">
           <div className="mb-4 flex items-center gap-3">
             <button className="text-blue-600 hover:scale-110 transition">
-              <a href="/profile">
-                &larr; Back to Profile
-              </a>
+              <a href="/profile">&larr; Back to Profile</a>
             </button>
             <select
               value={template}
@@ -252,6 +285,61 @@ ${src}
               )}
             </div>
           </div>
+
+          {resumeAnalysis && (
+            <div className="mt-6 bg-white border rounded p-6">
+              <h3 className="text-lg font-semibold mb-4">ATS Analysis</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 mb-2">
+                    {resumeAnalysis.atsScore || 0}/100
+                  </div>
+                  <div className="text-sm text-gray-600">ATS Compatibility</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Generated{" "}
+                    {new Date(resumeAnalysis.generatedAt).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="md:col-span-2">
+                  <h4 className="font-medium mb-3">Top Improvements</h4>
+                  <div className="space-y-2">
+                    {resumeAnalysis.recommendations
+                      ?.slice(0, 5)
+                      .map((rec, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-2 text-sm"
+                        >
+                          <span className="text-blue-600 font-bold">
+                            {idx + 1}.
+                          </span>
+                          <span className="text-gray-700">
+                            {typeof rec === "string"
+                              ? rec
+                              : rec.text ||
+                                rec.recommendation ||
+                                "Improve resume content"}
+                          </span>
+                        </div>
+                      ))}
+                    {(!resumeAnalysis.recommendations ||
+                      resumeAnalysis.recommendations.length === 0) && (
+                      <div className="text-sm text-gray-500">
+                        No specific recommendations available. Keep refining
+                        your resume!
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {analysisLoading && (
+            <div className="mt-6 bg-white border rounded p-6 text-center text-gray-500">
+              Loading resume analysis...
+            </div>
+          )}
         </div>
       </div>
     </AuthGuard>
