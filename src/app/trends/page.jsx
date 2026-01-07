@@ -25,6 +25,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 import { getOverview, getTrends } from "@/lib/services/trendsApi";
 
 // const trendingSkills = [
@@ -213,6 +214,15 @@ export default function TrendsPage() {
   const [insights, setInsights] = useState([]);
   const [emergingTech, setEmergingTech] = useState([]);
 
+  const [gdeltQuery, setGdeltQuery] = useState("OpenAI");
+  const [gdeltTimespan, setGdeltTimespan] = useState("24h");
+  const [gdeltMaxRecords, setGdeltMaxRecords] = useState(10);
+  const [gdeltSourceCountry, setGdeltSourceCountry] = useState("");
+  const [gdeltSourceLanguage, setGdeltSourceLanguage] = useState("");
+  const [gdeltLoading, setGdeltLoading] = useState(false);
+  const [gdeltError, setGdeltError] = useState("");
+  const [gdeltItems, setGdeltItems] = useState([]);
+
   const categories = [
     "all",
     "AI/ML",
@@ -367,6 +377,133 @@ export default function TrendsPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    // Preload a small default feed.
+    let cancelled = false;
+    (async () => {
+      try {
+        setGdeltLoading(true);
+        setGdeltError("");
+        const payload = {
+          query: gdeltQuery,
+          timespan: gdeltTimespan,
+          max_records: gdeltMaxRecords,
+        };
+
+        const res = await fetch("/api/gdelt/news", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const json = await res.json().catch(() => null);
+        if (cancelled) return;
+
+        if (!res.ok) {
+          setGdeltError(json?.error || "Failed to load GDELT news");
+          setGdeltItems([]);
+          return;
+        }
+
+        const list =
+          (Array.isArray(json) && json) ||
+          (Array.isArray(json?.articles) && json.articles) ||
+          (Array.isArray(json?.results) && json.results) ||
+          (Array.isArray(json?.data) && json.data) ||
+          (Array.isArray(json?.items) && json.items) ||
+          [];
+
+        const normalized = list.map((it, idx) => ({
+          id: it?.id || it?.url || it?.link || idx,
+          title: it?.title || it?.headline || it?.name || "Untitled",
+          source: it?.source || it?.publisher || it?.domain || "",
+          date: it?.date || it?.publishedAt || it?.published_at || it?.seenAt || "",
+          url: it?.url || it?.link || it?.sourceUrl || "",
+          summary: it?.summary || it?.description || it?.snippet || "",
+        }));
+
+        setGdeltItems(normalized);
+      } catch (e) {
+        if (!cancelled) {
+          setGdeltError(e?.message || "Failed to load GDELT news");
+          setGdeltItems([]);
+        }
+      } finally {
+        if (!cancelled) setGdeltLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function fetchGdeltNews(e) {
+    e?.preventDefault?.();
+    setGdeltLoading(true);
+    setGdeltError("");
+
+    try {
+      const q = String(gdeltQuery || "").trim();
+      if (!q) {
+        setGdeltError("Enter a query to search");
+        return;
+      }
+
+      const payload = {
+        query: q,
+        timespan: String(gdeltTimespan || "24h").trim() || "24h",
+        max_records: Number(gdeltMaxRecords) || 10,
+      };
+
+      if (String(gdeltSourceCountry || "").trim()) {
+        payload.source_country = String(gdeltSourceCountry).trim();
+      }
+      if (String(gdeltSourceLanguage || "").trim()) {
+        payload.source_language = String(gdeltSourceLanguage).trim();
+      }
+
+      const res = await fetch("/api/gdelt/news", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setGdeltError(json?.error || "Failed to fetch GDELT news");
+        setGdeltItems([]);
+        return;
+      }
+
+      const list =
+        (Array.isArray(json) && json) ||
+        (Array.isArray(json?.articles) && json.articles) ||
+        (Array.isArray(json?.results) && json.results) ||
+        (Array.isArray(json?.data) && json.data) ||
+        (Array.isArray(json?.items) && json.items) ||
+        [];
+
+      const normalized = list.map((it, idx) => ({
+        id: it?.id || it?.url || it?.link || idx,
+        title: it?.title || it?.headline || it?.name || "Untitled",
+        source: it?.source || it?.publisher || it?.domain || "",
+        date: it?.date || it?.publishedAt || it?.published_at || it?.seenAt || "",
+        url: it?.url || it?.link || it?.sourceUrl || "",
+        summary: it?.summary || it?.description || it?.snippet || "",
+      }));
+
+      setGdeltItems(normalized);
+    } catch (e2) {
+      setGdeltError(e2?.message || "Failed to fetch GDELT news");
+      setGdeltItems([]);
+    } finally {
+      setGdeltLoading(false);
+    }
+  }
 
   return (
     <AuthGuard>
@@ -535,6 +672,156 @@ export default function TrendsPage() {
                         </div>
                       ))}
                     </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Global Signals (GDELT) */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Globe className="h-5 w-5 mr-2 text-blue-600" />
+                      Global Signals
+                    </CardTitle>
+                    <CardDescription>
+                      Real-time global coverage
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={fetchGdeltNews} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-xs text-grey-600 mb-1">
+                            Query
+                          </div>
+                          <Input
+                            value={gdeltQuery}
+                            onChange={(e) => setGdeltQuery(e.target.value)}
+                            placeholder="e.g., OpenAI"
+                          />
+                        </div>
+                        <div>
+                          <div className="text-xs text-grey-600 mb-1">
+                            Timespan
+                          </div>
+                          <select
+                            value={gdeltTimespan}
+                            onChange={(e) => setGdeltTimespan(e.target.value)}
+                            className="h-10 w-full rounded-lg border border-grey-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all duration-200"
+                          >
+                            <option value="1h">1h</option>
+                            <option value="6h">6h</option>
+                            <option value="12h">12h</option>
+                            <option value="24h">24h</option>
+                            <option value="7d">7d</option>
+                          </select>
+                        </div>
+                        <div>
+                          <div className="text-xs text-grey-600 mb-1">
+                            Max records
+                          </div>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={100}
+                            value={gdeltMaxRecords}
+                            onChange={(e) =>
+                              setGdeltMaxRecords(Number(e.target.value || 0))
+                            }
+                            placeholder="10"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <div className="text-xs text-grey-600 mb-1">
+                              Source country (optional)
+                            </div>
+                            <Input
+                              value={gdeltSourceCountry}
+                              onChange={(e) =>
+                                setGdeltSourceCountry(e.target.value)
+                              }
+                              placeholder="e.g., IN"
+                            />
+                          </div>
+                          <div>
+                            <div className="text-xs text-grey-600 mb-1">
+                              Source language (optional)
+                            </div>
+                            <Input
+                              value={gdeltSourceLanguage}
+                              onChange={(e) =>
+                                setGdeltSourceLanguage(e.target.value)
+                              }
+                              placeholder="e.g., eng"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <Button type="submit" disabled={gdeltLoading}>
+                          {gdeltLoading ? "Fetching…" : "Fetch News"}
+                        </Button>
+                        {gdeltError ? (
+                          <div className="text-sm text-red-600">
+                            {gdeltError}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-3">
+                        {!gdeltLoading && !gdeltError && gdeltItems.length === 0 ? (
+                          <div className="text-sm text-grey-600">
+                            No results yet.
+                          </div>
+                        ) : null}
+
+                        {gdeltItems.map((item) => (
+                          <div
+                            key={item.id}
+                            className="border border-grey-200 rounded-lg p-4"
+                          >
+                            <div className="flex justify-between items-start gap-3 mb-2">
+                              <h3 className="font-medium text-grey-900">
+                                {item.title}
+                              </h3>
+                              {item.date ? (
+                                <span className="text-xs text-grey-500">
+                                  {item.date}
+                                </span>
+                              ) : null}
+                            </div>
+                            {item.summary ? (
+                              <p className="text-sm text-grey-600 mb-3">
+                                {item.summary}
+                              </p>
+                            ) : null}
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-grey-500">
+                                {item.source}
+                              </span>
+                              {item.url ? (
+                                <a
+                                  href={item.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-sm text-blue-600 inline-flex items-center"
+                                >
+                                  Open
+                                  <ExternalLink className="h-3 w-3 ml-1" />
+                                </a>
+                              ) : null}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </form>
                   </CardContent>
                 </Card>
               </motion.div>
