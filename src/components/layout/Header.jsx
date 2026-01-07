@@ -14,7 +14,6 @@ import {
   Target,
   Map,
   Home,
-  Settings,
   LogOut,
   UserCircle,
   Briefcase
@@ -66,9 +65,6 @@ export default function Header(props) {
     switch (action) {
       case 'profile':
         router.push('/profile');
-        break;
-      case 'settings':
-        router.push('/settings');
         break;
       case 'logout':
         // Add logout logic here
@@ -185,14 +181,6 @@ export default function Header(props) {
                         <span>View Profile</span>
                       </button>
 
-                      <button
-                        onClick={() => handleUserMenuClick('settings')}
-                        className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                      >
-                        <Settings className="h-4 w-4 mr-3 text-gray-400" />
-                        <span>Settings</span>
-                      </button>
-
                       <hr className="my-2 border-gray-100" />
 
                       <button
@@ -264,15 +252,6 @@ export default function Header(props) {
                   >
                     <User className="h-4 w-4 mr-2" />
                     <span>Profile</span>
-                  </Link>
-
-                  <Link
-                    href="/settings"
-                    className="w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    <span>Settings</span>
                   </Link>
 
                   <button

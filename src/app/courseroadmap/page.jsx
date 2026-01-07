@@ -71,6 +71,14 @@ function RoadmapContent() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const timerInterval = useRef(null);
 
+  // Track how many phases to show in the main roadmap (rest go to Next Actions)
+  const [visiblePhasesCount, setVisiblePhasesCount] = useState(3);
+
+  // Compute visible phases and next action phase from roadmap data
+  const allPhases = roadmap?.phases || [];
+  const visiblePhases = allPhases.slice(0, visiblePhasesCount);
+  const nextActionPhase = allPhases[visiblePhasesCount] || null; // Next phase to be added
+
   // Format seconds to HH:MM:SS
   const formatTime = useCallback((totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -101,8 +109,8 @@ function RoadmapContent() {
     return `< 1m`;
   }, []);
 
-  // Start timer for a milestone
-  const startTimer = useCallback((milestoneId, phaseId) => {
+  // Start timer for a milestone (syncs with backend using milestone startTime)
+  const startTimer = useCallback(async (milestoneId, phaseId) => {
     // Clear any existing timer
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
@@ -115,7 +123,36 @@ function RoadmapContent() {
     timerInterval.current = setInterval(() => {
       setElapsedSeconds(prev => prev + 1);
     }, 1000);
-  }, []);
+
+    // Update milestone startTime in phases and sync to backend
+    if (roadmap) {
+      const updatedPhases = roadmap.phases.map((phase) => {
+        if (phase.id !== phaseId) return phase;
+        return {
+          ...phase,
+          status: 'in-progress',
+          milestones: phase.milestones.map((milestone) => {
+            if (milestone.id !== milestoneId) return milestone;
+            return {
+              ...milestone,
+              status: 'in-progress',
+              startTime: startTime,
+              endTime: null, // Clear endTime to indicate timer is running
+            };
+          }),
+        };
+      });
+
+      setRoadmap({ ...roadmap, phases: updatedPhases });
+
+      // Sync to backend
+      try {
+        await updateRoadmap(roadmapId, { phases: updatedPhases });
+      } catch (err) {
+        console.error('Failed to sync timer start:', err);
+      }
+    }
+  }, [roadmapId, roadmap]);
 
   // Stop timer, update progress, and persist to backend
   const stopTimer = useCallback(async () => {
@@ -141,7 +178,7 @@ function RoadmapContent() {
           status: 'completed',
           progress: 100,
           startTime: milestone.startTime || startTime,
-          endTime,
+          endTime: endTime, // Set endTime to indicate timer stopped
           timeSpent: (milestone.timeSpent || 0) + timeSpent,
         };
       });
@@ -159,7 +196,7 @@ function RoadmapContent() {
       };
     });
 
-    // Calculate overall progress as average of phase progress
+    // Calculate overall progress as average of phase progress (for visible phases only)
     const overallProgress = updatedPhases.length > 0
       ? Math.round(updatedPhases.reduce((sum, p) => sum + (p.progress || 0), 0) / updatedPhases.length)
       : 0;
@@ -188,6 +225,13 @@ function RoadmapContent() {
     }
   }, [activeTimer, roadmap, roadmapId, elapsedSeconds]);
 
+  // Function to add next phase to visible roadmap (called via Continue Learning button)
+  const addNextPhaseToRoadmap = useCallback(() => {
+    if (!nextActionPhase) return;
+    // Simply increment the visible count to show the next phase
+    setVisiblePhasesCount(prev => prev + 1);
+  }, [nextActionPhase]);
+
   // Cleanup timer on unmount
   useEffect(() => {
     return () => {
@@ -213,6 +257,56 @@ function RoadmapContent() {
           setError("Roadmap not found.");
         } else {
           setRoadmap(item);
+
+          // Calculate initial visible phases count:
+          // Show at least 3, but if more phases are completed/in-progress, show those too
+          const phases = item.phases || [];
+          let activeOrCompletedCount = 0;
+          for (const phase of phases) {
+            if (phase.status === 'completed' || phase.status === 'in-progress') {
+              activeOrCompletedCount++;
+            }
+          }
+          // Also add 1 more (the next pending one) if there are completed ones
+          if (activeOrCompletedCount > 0 && activeOrCompletedCount < phases.length) {
+            activeOrCompletedCount++;
+          }
+          setVisiblePhasesCount(Math.max(3, activeOrCompletedCount));
+
+          // Detect running timer from milestone startTime/endTime (cross-device sync)
+          // A milestone with startTime but no endTime means timer is running
+          let foundActiveTimer = null;
+          for (const phase of (item.phases || [])) {
+            for (const milestone of (phase.milestones || [])) {
+              if (milestone.startTime && !milestone.endTime && milestone.status !== 'completed') {
+                foundActiveTimer = {
+                  milestoneId: milestone.id,
+                  phaseId: phase.id,
+                  startTime: milestone.startTime,
+                };
+                break;
+              }
+            }
+            if (foundActiveTimer) break;
+          }
+
+          if (foundActiveTimer) {
+            const { milestoneId, phaseId, startTime } = foundActiveTimer;
+            const startDate = new Date(startTime);
+            const now = new Date();
+            const elapsed = Math.floor((now - startDate) / 1000);
+
+            setActiveTimer({ milestoneId, phaseId, startTime });
+            setElapsedSeconds(elapsed > 0 ? elapsed : 0);
+
+            // Start the timer interval
+            if (timerInterval.current) {
+              clearInterval(timerInterval.current);
+            }
+            timerInterval.current = setInterval(() => {
+              setElapsedSeconds(prev => prev + 1);
+            }, 1000);
+          }
         }
       } catch (e) {
         setError("Failed to load roadmap. Please try again.");
@@ -223,15 +317,19 @@ function RoadmapContent() {
     fetchRoadmap();
   }, [roadmapId]);
 
+  // Calculate completion based on visible phases only
   const completion = useMemo(() => {
-    if (!roadmap) return 0;
-    const val =
-      typeof roadmap.progress === "number"
-        ? roadmap.progress
-        : roadmap.completionRate;
-    const num = Number(val);
-    return Number.isFinite(num) ? Math.max(0, Math.min(100, num)) : 0;
-  }, [roadmap]);
+    if (visiblePhases.length === 0) return 0;
+    const totalProgress = visiblePhases.reduce((sum, phase) => sum + (phase.progress || 0), 0);
+    return Math.round(totalProgress / visiblePhases.length);
+  }, [visiblePhases]);
+
+  // Check if the last visible phase is complete (required to add next phase)
+  const isLastPhaseComplete = useMemo(() => {
+    if (visiblePhases.length === 0) return false;
+    const lastPhase = visiblePhases[visiblePhases.length - 1];
+    return lastPhase?.status === 'completed' || lastPhase?.progress === 100;
+  }, [visiblePhases]);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -314,38 +412,69 @@ function RoadmapContent() {
               >
                 <Card>
                   <CardContent className="p-6">
-                    <div className="flex justify-between items-center mb-4">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
                       <h3 className="text-lg font-semibold text-grey-900">
                         Overall Progress
                       </h3>
-                      <span className="text-sm text-grey-600">
-                        Est. completion: {roadmap?.totalDuration}
-                      </span>
                     </div>
-                    <div className="w-full bg-grey-200 rounded-full h-3 mb-4">
+
+                    {/* Progress Bar */}
+                    <div className="w-full bg-grey-200 rounded-full h-3 mb-6">
                       <motion.div
-                        className="bg-gradient-to-r from-blue-600 to-green-600 h-3 rounded-full"
+                        className="bg-blue-600 h-3 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${completion}%` }}
-                        transition={{ duration: 1.5 }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
                       />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                      {(roadmap?.phases ?? []).map((phase, index) => (
-                        <div key={phase.id} className="text-center">
+
+                    {/* Phase Progress - Horizontal on desktop, Vertical on mobile */}
+                    <div className="hidden sm:flex items-start justify-between gap-2">
+                      {visiblePhases.map((phase, index) => (
+                        <div key={phase.id} className="flex flex-col items-center flex-1">
                           <div
-                            className={`w-3 h-3 rounded-full mx-auto mb-2 ${phase.status === "completed"
-                              ? "bg-green-600"
+                            className={`w-3 h-3 rounded-full ${phase.status === "completed"
+                              ? "bg-green-500"
                               : phase.status === "in-progress"
-                                ? "bg-blue-600"
+                                ? "bg-blue-500"
                                 : "bg-grey-300"
                               }`}
                           />
-                          <div className="text-xs font-medium text-grey-900">
-                            {phase.title}
+                          <div className="mt-2 text-center">
+                            <div className="text-xs font-medium text-grey-800 line-clamp-2">
+                              {phase.title}
+                            </div>
+                            <div className="text-xs text-grey-500">
+                              {phase.progress || 0}%
+                            </div>
                           </div>
-                          <div className="text-xs text-grey-600">
-                            {phase.duration}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Mobile: Vertical list layout */}
+                    <div className="sm:hidden space-y-3">
+                      {visiblePhases.map((phase, index) => (
+                        <div
+                          key={phase.id}
+                          className="flex items-center gap-3"
+                        >
+                          <div
+                            className={`w-3 h-3 rounded-full flex-shrink-0 ${phase.status === "completed"
+                              ? "bg-green-500"
+                              : phase.status === "in-progress"
+                                ? "bg-blue-500"
+                                : "bg-grey-300"
+                              }`}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-grey-800 truncate">
+                              {phase.title}
+                            </div>
+                          </div>
+                          <div className="text-sm font-medium text-grey-600">
+                            {phase.progress || 0}%
                           </div>
                         </div>
                       ))}
@@ -363,7 +492,7 @@ function RoadmapContent() {
                     transition={{ delay: 0.2 }}
                     className="space-y-6"
                   >
-                    {(roadmap?.phases ?? []).map((phase, phaseIndex) => (
+                    {visiblePhases.map((phase, phaseIndex) => (
                       <Card key={phase.id} className="overflow-hidden">
                         <CardHeader
                           className={`cursor-pointer ${phase.status === "completed"
@@ -490,7 +619,7 @@ function RoadmapContent() {
                                           }}
                                         >
                                           {milestone.status === "completed" ? (
-                                            "Review"
+                                            "Done"
                                           ) : (
                                             <>
                                               <Play className="h-4 w-4 mr-1" />
@@ -523,32 +652,71 @@ function RoadmapContent() {
                       <CardHeader>
                         <CardTitle>Next Actions</CardTitle>
                         <CardDescription>
-                          Your immediate focus areas
+                          {nextActionPhase
+                            ? "Your next learning phase"
+                            : "All phases completed!"}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-3">
-                          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <h4 className="font-medium text-blue-900 mb-1">
-                              Complete Redux Course
-                            </h4>
-                            <p className="text-sm text-blue-700">
-                              2 hours remaining • Due in 3 days
+                        {nextActionPhase ? (
+                          <>
+                            {/* Phase Header */}
+                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 mb-3">
+                              <h4 className="font-semibold text-blue-900 mb-1">
+                                {nextActionPhase.title}
+                              </h4>
+                              <p className="text-xs text-blue-700">
+                                {nextActionPhase.duration}
+                              </p>
+                            </div>
+
+                            {/* Milestones List */}
+                            {nextActionPhase.milestones && nextActionPhase.milestones.length > 0 && (
+                              <div className="space-y-2 mb-4">
+                                <p className="text-xs font-medium text-grey-600 uppercase tracking-wide">
+                                  Milestones
+                                </p>
+                                {nextActionPhase.milestones.map((milestone, index) => (
+                                  <div
+                                    key={milestone.id || index}
+                                    className="flex items-start space-x-2 p-2 bg-grey-50 rounded border border-grey-200"
+                                  >
+                                    <Circle className="h-4 w-4 text-grey-400 mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-grey-800 truncate">
+                                        {milestone.title}
+                                      </p>
+                                      <p className="text-xs text-grey-500">
+                                        {milestone.type} • {milestone.duration}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            <Button
+                              className="w-full"
+                              onClick={() => addNextPhaseToRoadmap()}
+                              disabled={!isLastPhaseComplete}
+                            >
+                              Continue Learning
+                              <ArrowRight className="h-4 w-4 ml-2" />
+                            </Button>
+                            {!isLastPhaseComplete && (
+                              <p className="text-xs text-grey-500 mt-2 text-center">
+                                Complete current phase first
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-center py-4">
+                            <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                            <p className="text-sm text-grey-600">
+                              Great job! You've completed all available phases.
                             </p>
                           </div>
-                          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                            <h4 className="font-medium text-yellow-900 mb-1">
-                              Start E-commerce Project
-                            </h4>
-                            <p className="text-sm text-yellow-700">
-                              Apply React skills • 3 weeks duration
-                            </p>
-                          </div>
-                        </div>
-                        <Button className="w-full mt-4">
-                          Continue Learning
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
+                        )}
                       </CardContent>
                     </Card>
                   </motion.div>
