@@ -56,6 +56,129 @@ import {
   enhanceResume as enhanceResumeApi,
 } from "@/lib/services/profileApi";
 
+const resumeOutput = {
+  result: {
+    atsScore: 30,
+    rationale:
+      "The resume is extremely brief and lacks the depth and detail typically expected for a Senior Full-Stack Engineer role. With only 3 years of experience, the candidate needs to significantly elaborate on their impact, technical contributions, and leadership to justify a senior title. Key sections like a professional summary, education, and detailed project descriptions are missing. The current bullet points are descriptive rather than achievement-oriented, and there's a significant absence of metrics, quantifiable results, and advanced technical keywords relevant to senior-level responsibilities.",
+    topFixes: [
+      "Develop a compelling professional summary or objective statement tailored to a Senior Full-Stack Engineer role, highlighting key skills and career aspirations.",
+      "Expand each experience bullet point to include specific achievements, quantifiable results, and the impact of your work. Focus on 'how' you did things and 'what' the outcome was.",
+      "Add a dedicated 'Education' section, including degrees, institutions, and graduation dates. Consider a 'Projects' section if you have significant personal or open-source contributions.",
+      "Integrate more senior-level keywords such as 'architecture,' 'design patterns,' 'scalability,' 'mentorship,' 'CI/CD,' and 'performance optimization' throughout the resume.",
+      "Address the experience gap for a 'Senior' role (typically 5+ years) by emphasizing leadership, complex problem-solving, and significant contributions within the 3 years of experience.",
+    ],
+    keywordGap: {
+      missing: [
+        "architecture",
+        "design patterns",
+        "scalability",
+        "performance optimization",
+        "security",
+        "CI/CD",
+        "unit testing",
+        "integration testing",
+        "mentorship",
+        "code review",
+        "cloud platforms (e.g., AWS, Azure, GCP)",
+        "microservices",
+        "TypeScript",
+        "GraphQL",
+      ],
+      underrepresented: ["Node.js", "React", "PostgreSQL", "Docker"],
+      recommendedAdditions: [
+        {
+          keyword: "architecture",
+          where: "Professional Summary, Experience Bullets",
+        },
+        {
+          keyword: "scalability",
+          where: "Experience Bullets, Professional Summary",
+        },
+        {
+          keyword: "CI/CD",
+          where: "Experience Bullets, Skills Section",
+        },
+        {
+          keyword: "mentorship",
+          where: "Experience Bullets, Professional Summary",
+        },
+        {
+          keyword: "AWS",
+          where: "Skills Section, Experience Bullets (if applicable)",
+        },
+        {
+          keyword: "TypeScript",
+          where: "Skills Section, Experience Bullets (if applicable)",
+        },
+      ],
+    },
+    rewrittenBullets: [
+      {
+        original: "Built REST APIs using Node.js.",
+        improved:
+          "Designed and developed robust, scalable RESTful APIs using Node.js, handling complex business logic and data interactions for critical application features.",
+      },
+      {
+        original: "Integrated APIs with React.",
+        improved:
+          "Implemented seamless integration between front-end React applications and back-end Node.js APIs, ensuring data consistency and enhancing real-time user experiences.",
+      },
+      {
+        original: "Used PostgreSQL for data storage.",
+        improved:
+          "Managed and optimized PostgreSQL databases, including schema design, query tuning, and performance monitoring, to support high-volume API requests.",
+      },
+      {
+        original: "Led team of 2 developers.",
+        improved:
+          "Provided technical leadership and mentorship to a team of 2 junior developers, guiding them through complex feature implementations and fostering skill development.",
+      },
+      {
+        original: "Coordinated development efforts.",
+        improved:
+          "Coordinated project tasks and sprint planning for a 2-person development team, ensuring efficient workflow and on-time delivery of key features.",
+      },
+      {
+        original: "Ensured code quality.",
+        improved:
+          "Conducted regular code reviews and established coding standards, significantly improving code quality, maintainability, and reducing technical debt across projects.",
+      },
+      {
+        original: "Contributed to software development lifecycle.",
+        improved:
+          "Actively participated in the full software development lifecycle, from requirements analysis and design to deployment, testing, and post-launch support.",
+      },
+      {
+        original: "Deployed applications with Docker.",
+        improved:
+          "Deployed and managed containerized applications using Docker, standardizing development environments and improving deployment reliability and efficiency.",
+      },
+      {
+        original: "Collaborated with stakeholders.",
+        improved:
+          "Collaborated cross-functionally with product managers and UX/UI designers to translate business requirements into technical specifications and deliver user-centric solutions.",
+      },
+    ],
+    skillsSection: {
+      core: ["JavaScript", "React", "Node.js"],
+      tools: ["Docker"],
+      cloud: [],
+      data: ["PostgreSQL"],
+      other: [],
+    },
+    formattingNotes: [
+      "Ensure consistent use of standard resume sections (e.g., 'Summary', 'Experience', 'Skills', 'Education') with clear headings for ATS parsing.",
+      "Avoid using multi-column layouts, tables, or complex graphics, as these can confuse ATS and lead to misinterpretation of content.",
+      "Use clear and consistent date formats (e.g., 'MM/YYYY - MM/YYYY' or 'Month Year - Month Year') for all experience and education entries.",
+      "Utilize bullet points for describing responsibilities and achievements under each role, starting each bullet with a strong action verb.",
+    ],
+  },
+  finishReason: "STOP",
+  resumeFormatDetected: "text",
+  generatedAt: "2026-01-08T04:46:23.902Z",
+};
+
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("personal");
   const [isEditing, setIsEditing] = useState(false);
@@ -101,6 +224,8 @@ export default function ProfilePage() {
   });
   const [loadingResume, setLoadingResume] = useState(true);
   const [agentProcessing, setAgentProcessing] = useState(false);
+  const [resumeAnalysis, setResumeAnalysis] = useState(null);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const fileInputRef = useRef(null);
   const router = useRouter();
 
@@ -658,9 +783,30 @@ ${edu || ""}
     }
   }
 
+  async function fetchResumeAnalysis() {
+    try {
+      setLoadingAnalysis(true);
+      const response = await fetch("/api/agent-results/resume-analysis");
+      if (response.ok) {
+        const data = await response.json();
+        setResumeAnalysis(data.result || resumeOutput.result);
+      } else {
+        // Fallback to mock data if API fails
+        setResumeAnalysis(resumeOutput.result);
+      }
+    } catch (e) {
+      console.error("Failed to fetch resume analysis:", e);
+      // Fallback to mock data on error
+      setResumeAnalysis(resumeOutput.result);
+    } finally {
+      setLoadingAnalysis(false);
+    }
+  }
+
   useEffect(() => {
     fetchProfile();
     fetchProfileCompleteness();
+    fetchResumeAnalysis();
   }, []);
 
   const ScoreCircle = ({ score }) => {
@@ -1358,67 +1504,203 @@ ${edu || ""}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {loadingResume ? (
+                      {loadingAnalysis ? (
                         <div className="text-center py-8 text-gray-500">
                           Loading analysis...
                         </div>
-                      ) : resumeData.analysis &&
-                        (resumeData.analysis.strengths?.length > 0 ||
-                          resumeData.analysis.weaknesses?.length > 0) ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {/* Strengths */}
-                          <div>
-                            <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              Strengths
-                            </h4>
-                            {resumeData.analysis.strengths?.length > 0 ? (
-                              <ul className="space-y-2">
-                                {resumeData.analysis.strengths.map(
-                                  (strength, index) => (
-                                    <li
-                                      key={index}
-                                      className="flex items-center gap-2 text-sm text-gray-600"
-                                    >
-                                      <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
-                                      {strength}
-                                    </li>
-                                  )
-                                )}
-                              </ul>
-                            ) : (
-                              <p className="text-sm text-gray-500">
-                                No strengths identified yet
+                      ) : resumeAnalysis ? (
+                        <div className="space-y-6">
+                          {/* ATS Score */}
+                          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 mb-1">
+                                ATS Score
+                              </h4>
+                              <p className="text-sm text-gray-600">
+                                Applicant Tracking System compatibility
                               </p>
-                            )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="text-right">
+                                <div className="text-3xl font-bold text-blue-600">
+                                  {resumeAnalysis.atsScore}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  out of 100
+                                </div>
+                              </div>
+                              <div className="w-16 h-16">
+                                <svg
+                                  className="transform -rotate-90"
+                                  viewBox="0 0 100 100"
+                                >
+                                  <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="40"
+                                    stroke="#E5E7EB"
+                                    strokeWidth="8"
+                                    fill="none"
+                                  />
+                                  <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="40"
+                                    stroke={
+                                      resumeAnalysis.atsScore >= 70
+                                        ? "#10B981"
+                                        : resumeAnalysis.atsScore >= 40
+                                        ? "#F59E0B"
+                                        : "#EF4444"
+                                    }
+                                    strokeWidth="8"
+                                    fill="none"
+                                    strokeDasharray={`${
+                                      (resumeAnalysis.atsScore / 100) * 251.2
+                                    } 251.2`}
+                                    strokeLinecap="round"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
                           </div>
 
-                          {/* Areas for Improvement */}
+                          {/* Rationale */}
                           <div>
-                            <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                              <AlertCircle className="h-4 w-4 text-yellow-600" />
-                              Areas for Improvement
+                            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-blue-600" />
+                              Analysis Summary
                             </h4>
-                            {resumeData.analysis.weaknesses?.length > 0 ? (
-                              <ul className="space-y-2">
-                                {resumeData.analysis.weaknesses.map(
-                                  (weakness, index) => (
-                                    <li
-                                      key={index}
-                                      className="flex items-center gap-2 text-sm text-gray-600"
-                                    >
-                                      <div className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></div>
-                                      {weakness}
-                                    </li>
-                                  )
-                                )}
-                              </ul>
-                            ) : (
-                              <p className="text-sm text-gray-500">
-                                No improvement areas identified
-                              </p>
-                            )}
+                            <p className="text-sm text-gray-700 leading-relaxed p-3 bg-gray-50 rounded-lg border border-gray-200">
+                              {resumeAnalysis.rationale}
+                            </p>
                           </div>
+
+                          {/* Keyword Gap */}
+                          {resumeAnalysis.keywordGap && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {/* Missing Keywords */}
+                              <div>
+                                <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                                  <AlertCircle className="h-4 w-4 text-red-600" />
+                                  Missing Keywords
+                                </h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {resumeAnalysis.keywordGap.missing
+                                    ?.slice(0, 8)
+                                    .map((keyword, index) => (
+                                      <span
+                                        key={index}
+                                        className="px-2 py-1 text-xs font-medium bg-red-100 text-red-700 rounded-full"
+                                      >
+                                        {keyword}
+                                      </span>
+                                    ))}
+                                  {resumeAnalysis.keywordGap.missing?.length >
+                                    8 && (
+                                    <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">
+                                      +
+                                      {resumeAnalysis.keywordGap.missing
+                                        .length - 8}{" "}
+                                      more
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Underrepresented Keywords */}
+                              <div>
+                                <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                                  <TrendingUp className="h-4 w-4 text-yellow-600" />
+                                  Underrepresented
+                                </h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {resumeAnalysis.keywordGap.underrepresented?.map(
+                                    (keyword, index) => (
+                                      <span
+                                        key={index}
+                                        className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full"
+                                      >
+                                        {keyword}
+                                      </span>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Skills Section Overview */}
+                          {resumeAnalysis.skillsSection && (
+                            <div>
+                              <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                                <Target className="h-4 w-4 text-green-600" />
+                                Detected Skills
+                              </h4>
+                              <div className="space-y-2">
+                                {resumeAnalysis.skillsSection.core?.length >
+                                  0 && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-xs font-medium text-gray-600 min-w-[80px]">
+                                      Core:
+                                    </span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {resumeAnalysis.skillsSection.core.map(
+                                        (skill, index) => (
+                                          <span
+                                            key={index}
+                                            className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded"
+                                          >
+                                            {skill}
+                                          </span>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {resumeAnalysis.skillsSection.tools?.length >
+                                  0 && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-xs font-medium text-gray-600 min-w-[80px]">
+                                      Tools:
+                                    </span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {resumeAnalysis.skillsSection.tools.map(
+                                        (skill, index) => (
+                                          <span
+                                            key={index}
+                                            className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded"
+                                          >
+                                            {skill}
+                                          </span>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {resumeAnalysis.skillsSection.data?.length >
+                                  0 && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-xs font-medium text-gray-600 min-w-[80px]">
+                                      Data:
+                                    </span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {resumeAnalysis.skillsSection.data.map(
+                                        (skill, index) => (
+                                          <span
+                                            key={index}
+                                            className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded"
+                                          >
+                                            {skill}
+                                          </span>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-500">
@@ -1428,7 +1710,7 @@ ${edu || ""}
                     </CardContent>
                   </Card>
 
-                  {/* Suggestions */}
+                  {/* AI Suggestions */}
                   <Card>
                     <CardHeader>
                       <CardTitle>AI Suggestions</CardTitle>
@@ -1437,17 +1719,32 @@ ${edu || ""}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {loadingResume ? (
+                      {loadingAnalysis ? (
                         <div className="text-center py-8 text-gray-500">
                           Loading suggestions...
                         </div>
-                      ) : resumeData.suggestions?.length > 0 ? (
-                        <div className="space-y-4">
-                          {resumeData.suggestions.map((suggestion, index) => (
-                            <SuggestionCard
+                      ) : resumeAnalysis?.topFixes?.length > 0 ? (
+                        <div className="space-y-3">
+                          {resumeAnalysis.topFixes.map((fix, index) => (
+                            <div
                               key={index}
-                              suggestion={suggestion}
-                            />
+                              className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0">
+                                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <span className="text-sm font-bold text-blue-600">
+                                      {index + 1}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm text-gray-700 leading-relaxed">
+                                    {fix}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       ) : (
@@ -1458,6 +1755,84 @@ ${edu || ""}
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* Rewritten Bullets */}
+                  {resumeAnalysis?.rewrittenBullets?.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Improved Bullet Points</CardTitle>
+                        <CardDescription>
+                          See how AI can enhance your experience descriptions
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {resumeAnalysis.rewrittenBullets
+                            .slice(0, 5)
+                            .map((bullet, index) => (
+                              <div
+                                key={index}
+                                className="border border-gray-200 rounded-lg p-4 space-y-3"
+                              >
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <X className="h-3 w-3 text-red-500" />
+                                    <span className="text-xs font-medium text-gray-500">
+                                      Original
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-600 italic pl-5">
+                                    {bullet.original}
+                                  </p>
+                                </div>
+                                <div className="border-t border-gray-200 pt-3">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
+                                    <span className="text-xs font-medium text-gray-500">
+                                      Improved
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-900 pl-5">
+                                    {bullet.improved}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          {resumeAnalysis.rewrittenBullets.length > 5 && (
+                            <p className="text-xs text-gray-500 text-center">
+                              +{resumeAnalysis.rewrittenBullets.length - 5} more
+                              improvements available
+                            </p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Formatting Notes */}
+                  {resumeAnalysis?.formattingNotes?.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Formatting Tips</CardTitle>
+                        <CardDescription>
+                          Ensure your resume is ATS-friendly
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {resumeAnalysis.formattingNotes.map((note, index) => (
+                            <li
+                              key={index}
+                              className="flex items-start gap-2 text-sm text-gray-700"
+                            >
+                              <Eye className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                              <span>{note}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
                 </motion.div>
               )}
 

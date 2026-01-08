@@ -405,13 +405,13 @@ export default function CareersPage() {
     if (interviewPrepData[jobKey]) {
       return;
     }
-
+    console.log("🤖 [Careers] Fetching interview prep data for job:", jobKey);
     setLoadingPrepData(true);
     try {
       const { apply_link, ingested_at, ...jobData } = job;
-      console.log(`https://career-insights-1010849458554.us-central1.run.app/api/interview-prep`)
+      console.log(`${NEXT_PUBLIC_API_PROMPT_URL}/api/interview-prep`)
       const response = await fetch(
-        `https://career-insights-1010849458554.us-central1.run.app/api/interview-prep`,
+        `${NEXT_PUBLIC_API_PROMPT_URL}/api/interview-prep`,
         {
           method: "POST",
           headers: {
