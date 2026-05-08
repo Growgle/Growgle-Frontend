@@ -210,8 +210,12 @@ npm run lint         # Run ESLint
 ---
 
 <p align="center">
-  <strong>Growgle</strong> — Empowering the next generation of professionals with AI-driven career intelligence.<br/>
+  <br/>
+  <strong>Growgle</strong> &nbsp;·&nbsp; India's AI-Powered Career Advisor
+  <br/><br/>
+  <em>Empowering the next generation of professionals with AI-driven career intelligence.</em>
+  <br/>
   <em>The common path for Google and India towards Viksit Bharat 2047.</em>
-  <br>
-  <em> Built with ❤️ by the **Growgle Team**</em>
+  <br/><br/>
+  Built with ❤️ by the <strong>Growgle Team</strong> &nbsp;
 </p>
