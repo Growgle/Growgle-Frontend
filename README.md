@@ -209,13 +209,9 @@ npm run lint         # Run ESLint
 
 ---
 
-## Team
-
-Built with ❤️ by the **Growgle Team**
-
----
-
 <p align="center">
   <strong>Growgle</strong> — Empowering the next generation of professionals with AI-driven career intelligence.<br/>
   <em>The common path for Google and India towards Viksit Bharat 2047.</em>
+  <br>
+  <em> Built with ❤️ by the **Growgle Team**</em>
 </p>
