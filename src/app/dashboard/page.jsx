@@ -294,21 +294,26 @@ export default function DashboardPage() {
                 color: "text-red-600 bg-red-50",
               },
             ].map((metric, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow">
+              <Card
+                key={index}
+                className="rounded-2xl hover:shadow-md transition-shadow"
+              >
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="text-sm text-grey-600 mb-1">
+                      <p className="text-base font-medium text-grey-700 mb-2">
                         {metric.label}
                       </p>
-                      <p className="text-2xl font-bold text-grey-900">
+                      <p className="text-4xl font-bold text-grey-900">
                         {metric.value}
                       </p>
-                      <p className="text-xs text-green-600 mt-1">
+                      <p className="text-xs font-medium text-green-600 mt-2">
                         {metric.change}
                       </p>
                     </div>
-                    <div className={`p-3 rounded-lg ${metric.color}`}>
+                    <div
+                      className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${metric.color}`}
+                    >
                       <metric.icon className="h-6 w-6" />
                     </div>
                   </div>
@@ -583,7 +588,7 @@ export default function DashboardPage() {
                                       : activity.type === "roadmap"
                                       ? "bg-green-100"
                                       : activity.type === "skill"
-                                      ? "bg-purple-100"
+                                      ? "bg-blue-100"
                                       : "bg-yellow-100"
                                   }`}
                                 >
@@ -594,7 +599,7 @@ export default function DashboardPage() {
                                     <Target className="h-4 w-4 text-green-600" />
                                   )}
                                   {activity.type === "skill" && (
-                                    <Target className="h-4 w-4 text-purple-600" />
+                                    <Target className="h-4 w-4 text-blue-600" />
                                   )}
                                   {activity.type === "achievement" && (
                                     <Award className="h-4 w-4 text-yellow-600" />

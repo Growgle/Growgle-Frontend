@@ -502,72 +502,80 @@ export default function CareersPage() {
             transition={{ delay: 0.1 }}
             className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
           >
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="rounded-2xl hover:shadow-md transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm text-grey-600 mb-1">
+                    <p className="text-base font-medium text-grey-700 mb-2">
                       Total Recommendations
                     </p>
-                    <p className="text-2xl font-bold text-grey-900">
+                    <p className="text-4xl font-bold text-grey-900">
                       {filteredJobs.length}
                     </p>
-                    <p className="text-xs text-green-600 mt-1">+12 this week</p>
+                    <p className="text-xs font-medium text-green-600 mt-2">
+                      +12 this week
+                    </p>
                   </div>
-                  <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
+                  <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                     <Briefcase className="h-6 w-6" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="rounded-2xl hover:shadow-md transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm text-grey-600 mb-1">
+                    <p className="text-base font-medium text-grey-700 mb-2">
                       Trending Domains
                     </p>
-                    <p className="text-2xl font-bold text-grey-900">AI/ML</p>
-                    <p className="text-xs text-green-600 mt-1">+35% growth</p>
+                    <p className="text-4xl font-bold text-grey-900">AI/ML</p>
+                    <p className="text-xs font-medium text-green-600 mt-2">
+                      +35% growth
+                    </p>
                   </div>
-                  <div className="p-3 rounded-lg bg-green-50 text-green-600">
+                  <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-50 text-green-600">
                     <TrendingUp className="h-6 w-6" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="rounded-2xl hover:shadow-md transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm text-grey-600 mb-1">
+                    <p className="text-base font-medium text-grey-700 mb-2">
                       Top Required Skills
                     </p>
-                    <p className="text-2xl font-bold text-grey-900">React</p>
-                    <p className="text-xs text-green-600 mt-1">1,200+ jobs</p>
+                    <p className="text-4xl font-bold text-grey-900">React</p>
+                    <p className="text-xs font-medium text-green-600 mt-2">
+                      1,200+ jobs
+                    </p>
                   </div>
-                  <div className="p-3 rounded-lg bg-purple-50 text-purple-600">
+                  <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-yellow-50 text-yellow-600">
                     <Target className="h-6 w-6" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="rounded-2xl hover:shadow-md transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm text-grey-600 mb-1">Saved Jobs</p>
-                    <p className="text-2xl font-bold text-grey-900">
+                    <p className="text-base font-medium text-grey-700 mb-2">
+                      Saved Jobs
+                    </p>
+                    <p className="text-4xl font-bold text-grey-900">
                       {savedJobs.length}
                     </p>
-                    <p className="text-xs text-grey-500 mt-1">
+                    <p className="text-xs font-medium text-grey-500 mt-2">
                       View collection
                     </p>
                   </div>
-                  <div className="p-3 rounded-lg bg-red-50 text-red-600">
+                  <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
                     <Heart className="h-6 w-6" />
                   </div>
                 </div>
@@ -1273,7 +1281,7 @@ export default function CareersPage() {
                                   ].keySkillsFocus?.slice(0,5).map((skill, idx) => (
                                     <span
                                       key={idx}
-                                      className="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded"
+                                      className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
                                     >
                                       {skill}
                                     </span>

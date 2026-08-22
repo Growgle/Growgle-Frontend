@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex">
       {/* Left Side - Form */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
@@ -61,8 +61,8 @@ export default function ForgotPasswordPage() {
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-pink-400 to-purple-400 rounded-full blur-3xl"></div>
+          <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-green-400 to-blue-400 rounded-full blur-3xl"></div>
         </div>
 
         <div className="max-w-md w-full relative z-10">
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
                 transition={{ duration: 0.6 }}
               >
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-400 to-indigo-500 rounded-2xl mb-6 shadow-lg">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-500 rounded-2xl mb-6 shadow-lg">
                     <Key className="w-8 h-8 text-white" />
                   </div>
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-3">
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Enter your email address"
-                        className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white"
+                        className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white"
                         required
                       />
                     </div>
@@ -124,7 +124,7 @@ export default function ForgotPasswordPage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleSubmit}
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-purple-400 to-indigo-500 text-white py-4 rounded-2xl font-semibold hover:from-purple-500 hover:to-indigo-600 transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-to-r from-blue-400 to-blue-500 text-white py-4 rounded-2xl font-semibold hover:from-blue-500 hover:to-blue-600 transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
                       <div className="flex items-center justify-center">
@@ -141,7 +141,7 @@ export default function ForgotPasswordPage() {
                   <motion.a
                     whileHover={{ scale: 1.02, x: -2 }}
                     href="/auth/login"
-                    className="inline-flex items-center text-purple-500 hover:text-purple-600 font-semibold transition-all duration-300"
+                    className="inline-flex items-center text-blue-500 hover:text-blue-600 font-semibold transition-all duration-300"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to sign in
@@ -186,20 +186,20 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-6">
                   <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
                     <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                      <Shield className="w-5 h-5 text-purple-500 mr-2" />
+                      <Shield className="w-5 h-5 text-blue-500 mr-2" />
                       What's next?
                     </h3>
                     <ul className="text-sm text-gray-600 space-y-2 text-left">
                       <li className="flex items-start">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                         Check your email inbox (and spam folder)
                       </li>
                       <li className="flex items-start">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                         Click the secure reset link in the email
                       </li>
                       <li className="flex items-start">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                         Create a new strong password
                       </li>
                     </ul>
@@ -211,7 +211,7 @@ export default function ForgotPasswordPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleTryAgain}
-                      className="text-purple-500 hover:text-purple-600 font-semibold transition-colors underline decoration-purple-300 hover:decoration-purple-500"
+                      className="text-blue-500 hover:text-blue-600 font-semibold transition-colors underline decoration-blue-300 hover:decoration-blue-500"
                     >
                       Try another email address
                     </motion.button>
@@ -220,7 +220,7 @@ export default function ForgotPasswordPage() {
                   <motion.a
                     whileHover={{ scale: 1.02, x: -2 }}
                     href="/auth/login"
-                    className="inline-flex items-center text-purple-500 hover:text-purple-600 font-semibold transition-all duration-300"
+                    className="inline-flex items-center text-blue-500 hover:text-blue-600 font-semibold transition-all duration-300"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to sign in
@@ -237,7 +237,7 @@ export default function ForgotPasswordPage() {
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3, duration: 0.8 }}
-        className="hidden lg:flex w-1/2 items-center justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 relative overflow-hidden"
+        className="hidden lg:flex w-1/2 items-center justify-center bg-gradient-to-br from-blue-50 via-blue-50 to-green-50 relative overflow-hidden"
       >
         {/* Floating Elements Animation */}
         <motion.div
@@ -252,7 +252,7 @@ export default function ForgotPasswordPage() {
           }}
           className="absolute top-20 left-20"
         >
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-2xl shadow-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl shadow-lg flex items-center justify-center">
             <Lock className="w-6 h-6 text-white" />
           </div>
         </motion.div>
@@ -270,7 +270,7 @@ export default function ForgotPasswordPage() {
           }}
           className="absolute top-32 right-16"
         >
-          <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-500 rounded-xl shadow-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-500 rounded-xl shadow-lg flex items-center justify-center">
             <Key className="w-5 h-5 text-white" />
           </div>
         </motion.div>
@@ -744,9 +744,9 @@ export default function ForgotPasswordPage() {
 
         {/* Enhanced Background Decoration */}
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-40 h-40 bg-gradient-to-br from-purple-300 to-indigo-400 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 right-20 w-32 h-32 bg-gradient-to-br from-pink-300 to-purple-400 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 left-1/3 w-36 h-36 bg-gradient-to-br from-indigo-300 to-blue-400 rounded-full blur-3xl"></div>
+          <div className="absolute top-10 left-10 w-40 h-40 bg-gradient-to-br from-blue-300 to-blue-400 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 right-20 w-32 h-32 bg-gradient-to-br from-green-300 to-blue-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 left-1/3 w-36 h-36 bg-gradient-to-br from-blue-300 to-blue-400 rounded-full blur-3xl"></div>
         </div>
 
         {/* Animated Grid Pattern */}

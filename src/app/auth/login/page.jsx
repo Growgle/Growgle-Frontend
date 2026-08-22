@@ -83,8 +83,8 @@ export default function LoginPage() {
       >
         {/* Subtle Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-20 -left-20 w-80 h-80 bg-gradient-to-br from-indigo-100/40 to-blue-100/40 rounded-full blur-3xl" />
-          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-gradient-to-tl from-violet-100/30 to-purple-100/30 rounded-full blur-3xl" />
+          <div className="absolute -top-20 -left-20 w-80 h-80 bg-gradient-to-br from-blue-100/40 to-blue-100/40 rounded-full blur-3xl" />
+          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-gradient-to-tl from-blue-100/30 to-green-100/30 rounded-full blur-3xl" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-blue-50/50 to-transparent rounded-full" />
         </div>
 
@@ -103,8 +103,8 @@ export default function LoginPage() {
               className="inline-flex items-center justify-center w-16 h-16 mb-6"
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl blur-lg opacity-40" />
-                <div className="relative bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-4 shadow-lg shadow-indigo-500/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-green-600 rounded-2xl blur-lg opacity-40" />
+                <div className="relative bg-gradient-to-br from-blue-500 to-green-600 rounded-2xl p-4 shadow-lg shadow-blue-500/20">
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
               </div>
@@ -134,8 +134,8 @@ export default function LoginPage() {
                 Email Address
               </label>
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -m-0.5" />
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-indigo-500 transition-colors" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-green-500/10 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -m-0.5" />
+                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
                 <input
                   type="email"
                   id="email"
@@ -143,7 +143,7 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email"
-                  className="relative w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all duration-300 text-gray-900 placeholder:text-gray-400 shadow-sm hover:border-gray-300"
+                  className="relative w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none transition-all duration-300 text-gray-900 placeholder:text-gray-400 shadow-sm hover:border-gray-300"
                   required
                 />
               </div>
@@ -158,8 +158,8 @@ export default function LoginPage() {
                 Password
               </label>
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -m-0.5" />
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-indigo-500 transition-colors" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-green-500/10 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -m-0.5" />
+                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
@@ -167,7 +167,7 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Enter your password"
-                  className="relative w-full pl-12 pr-12 py-3.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all duration-300 text-gray-900 placeholder:text-gray-400 shadow-sm hover:border-gray-300"
+                  className="relative w-full pl-12 pr-12 py-3.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none transition-all duration-300 text-gray-900 placeholder:text-gray-400 shadow-sm hover:border-gray-300"
                   required
                 />
                 <button
@@ -195,7 +195,7 @@ export default function LoginPage() {
                     onChange={handleInputChange}
                     className="sr-only peer"
                   />
-                  <div className="w-5 h-5 border-2 border-gray-300 rounded-md peer-checked:border-indigo-500 peer-checked:bg-indigo-500 transition-all duration-200" />
+                  <div className="w-5 h-5 border-2 border-gray-300 rounded-md peer-checked:border-blue-500 peer-checked:bg-blue-500 transition-all duration-200" />
                   <svg
                     className="absolute top-0.5 left-0.5 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
                     fill="none"
@@ -213,7 +213,7 @@ export default function LoginPage() {
               <motion.a
                 whileHover={{ scale: 1.02 }}
                 href="/auth/forgot-password"
-                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
                 Forgot password?
               </motion.a>
@@ -236,9 +236,9 @@ export default function LoginPage() {
               whileTap={{ scale: 0.99 }}
               type="submit"
               disabled={isLoading}
-              className="relative w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-indigo-500/25 disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden group"
+              className="relative w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-3.5 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-blue-500/25 disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden group"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-green-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               {isLoading ? (
                 <div className="flex items-center justify-center relative">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3" />
@@ -265,7 +265,7 @@ export default function LoginPage() {
               <motion.a
                 whileHover={{ scale: 1.02 }}
                 href="/auth/signup"
-                className="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
+                className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
               >
                 Sign up for free
               </motion.a>
@@ -302,7 +302,7 @@ export default function LoginPage() {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2, duration: 0.8 }}
-        className="hidden lg:flex w-1/2 items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 relative overflow-hidden"
+        className="hidden lg:flex w-1/2 items-center justify-center bg-gradient-to-br from-blue-50 via-green-50 to-green-50 relative overflow-hidden"
       >
         {/* Decorative Background Elements */}
         <div className="absolute inset-0">
@@ -316,8 +316,8 @@ export default function LoginPage() {
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-20 left-20"
         >
-          <div className="w-16 h-16 bg-white rounded-2xl shadow-xl shadow-indigo-500/10 flex items-center justify-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+          <div className="w-16 h-16 bg-white rounded-2xl shadow-xl shadow-blue-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
           </div>
@@ -328,8 +328,8 @@ export default function LoginPage() {
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           className="absolute top-32 right-24"
         >
-          <div className="w-14 h-14 bg-white rounded-2xl shadow-xl shadow-purple-500/10 flex items-center justify-center">
-            <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
+          <div className="w-14 h-14 bg-white rounded-2xl shadow-xl shadow-green-500/10 flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-500 rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
           </div>
@@ -588,7 +588,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 opacity-30">
           <svg width="100%" height="100%" className="absolute inset-0">
             <pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.5" fill="currentColor" className="text-indigo-300" />
+              <circle cx="2" cy="2" r="1.5" fill="currentColor" className="text-blue-300" />
             </pattern>
             <rect width="100%" height="100%" fill="url(#dots)" />
           </svg>

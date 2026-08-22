@@ -1510,7 +1510,7 @@ ${edu || ""}
                       ) : resumeAnalysis ? (
                         <div className="space-y-6">
                           {/* ATS Score */}
-                          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
                             <div className="flex-1">
                               <h4 className="font-semibold text-gray-900 mb-1">
                                 ATS Score
@@ -1688,7 +1688,7 @@ ${edu || ""}
                                         (skill, index) => (
                                           <span
                                             key={index}
-                                            className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded"
+                                            className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded"
                                           >
                                             {skill}
                                           </span>

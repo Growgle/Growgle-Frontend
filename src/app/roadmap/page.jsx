@@ -229,18 +229,18 @@ const RoadmapDashboard = () => {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="mx-20">
+      <div className="min-h-screen bg-grey-50 p-6">
+        <div className="mx-auto max-w-7xl">
           <motion.div
             className="flex justify-between items-center mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-grey-900">
                 Career Roadmaps
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-grey-600 mt-2">
                 Track your learning journey across multiple paths
               </p>
             </div>
@@ -272,25 +272,25 @@ const RoadmapDashboard = () => {
                 icon: TrendingUp,
                 label: "Overall Progress",
                 value: `${overallProgress}%`,
-                color: "blue",
+                chip: "bg-blue-100 text-blue-600",
               },
               {
                 icon: Book,
                 label: "Active Roadmaps",
                 value: roadmaps.length,
-                color: "green",
+                chip: "bg-green-100 text-green-600",
               },
               {
                 icon: Clock,
                 label: "Max Duration",
                 value: `${maxMonths} months`,
-                color: "yellow",
+                chip: "bg-yellow-100 text-yellow-600",
               },
               {
                 icon: Award,
                 label: "Completed",
                 value: roadmaps.filter((r) => r.progress === 100).length,
-                color: "purple",
+                chip: "bg-red-100 text-red-600",
               },
             ].map((stat, index) => (
               <motion.div
@@ -298,19 +298,21 @@ const RoadmapDashboard = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white rounded-lg p-6 shadow-sm border hover:shadow-md transition-shadow"
+                className="bg-white rounded-2xl p-6 shadow-sm border hover:shadow-md transition-shadow"
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-12 h-12 bg-${stat.color}-100 rounded-lg flex items-center justify-center`}
-                  >
-                    <stat.icon className={`text-${stat.color}-600`} size={24} />
-                  </div>
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-gray-600 text-sm">{stat.label}</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-base font-medium text-grey-700 mb-2">
+                      {stat.label}
+                    </p>
+                    <p className="text-4xl font-bold text-grey-900">
                       {stat.value}
                     </p>
+                  </div>
+                  <div
+                    className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${stat.chip}`}
+                  >
+                    <stat.icon size={24} />
                   </div>
                 </div>
               </motion.div>
@@ -334,7 +336,7 @@ const RoadmapDashboard = () => {
                 transition={{ duration: 0.3 }}
               >
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-grey-900">
                     Start a New Learning Roadmap
                   </h3>
                   <button
@@ -347,7 +349,7 @@ const RoadmapDashboard = () => {
                       setGenerationError("");
                     }}
                     disabled={isGenerating}
-                    className="text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+                    className="text-grey-500 hover:text-grey-700 transition-colors disabled:opacity-50"
                   >
                     <X size={20} />
                   </button>
@@ -365,7 +367,7 @@ const RoadmapDashboard = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-grey-700 mb-1">
                       Course/Role Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -374,18 +376,18 @@ const RoadmapDashboard = () => {
                       value={newRoadmapTitle}
                       onChange={(e) => setNewRoadmapTitle(e.target.value)}
                       disabled={isGenerating}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-2 border border-grey-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-grey-700 mb-1">
                       Target Duration <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={newRoadmapDuration}
                       onChange={(e) => setNewRoadmapDuration(e.target.value)}
                       disabled={isGenerating}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-2 border border-grey-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <option value="">Select duration...</option>
                       {predefinedDurations.map((duration, index) => (
@@ -399,7 +401,7 @@ const RoadmapDashboard = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-grey-700 mb-1">
                       Current Skills (comma-separated)
                     </label>
                     <input
@@ -408,21 +410,21 @@ const RoadmapDashboard = () => {
                       value={newRoadmapSkills}
                       onChange={(e) => setNewRoadmapSkills(e.target.value)}
                       disabled={isGenerating}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-2 border border-grey-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-grey-500 mt-1">
                       Helps personalize your roadmap
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-grey-700 mb-1">
                       Current Experience Level
                     </label>
                     <select
                       value={newRoadmapExperience}
                       onChange={(e) => setNewRoadmapExperience(e.target.value)}
                       disabled={isGenerating}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-2 border border-grey-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <option value="">Select experience...</option>
                       <option value="Beginner">Beginner</option>
@@ -460,7 +462,7 @@ const RoadmapDashboard = () => {
                       setGenerationError("");
                     }}
                     disabled={isGenerating}
-                    className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2.5 border border-grey-300 rounded-lg hover:bg-grey-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -493,10 +495,10 @@ const RoadmapDashboard = () => {
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1 min-w-0 mr-3">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1 truncate">
+                        <h3 className="text-lg font-semibold text-grey-900 mb-1 truncate">
                           {roadmap.title}
                         </h3>
-                        <p className="text-gray-600 text-sm line-clamp-2">
+                        <p className="text-grey-600 text-sm line-clamp-2">
                           {roadmap.description}
                         </p>
                       </div>
@@ -508,7 +510,7 @@ const RoadmapDashboard = () => {
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                    <div className="w-full bg-grey-200 rounded-full h-3 mb-4">
                       <motion.div
                         className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full"
                         initial={{ width: 0 }}
@@ -519,18 +521,18 @@ const RoadmapDashboard = () => {
 
                     {/* Duration and Start Date */}
                     <div className="space-y-3 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-grey-600">
                         <Calendar size={16} />
                         <span>
                           Started:{" "}
                           {new Date(roadmap.startDate).toLocaleDateString()}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-grey-600">
                         <Clock size={16} className="flex-shrink-0" />
                         <span>Duration: {roadmap.totalDuration || roadmap.duration || 'N/A'}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-grey-600">
                         <Target size={16} />
                         <span>
                           Status:{" "}
@@ -544,9 +546,9 @@ const RoadmapDashboard = () => {
                     </div>
 
                     {/* Progress Status */}
-                    <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="bg-grey-50 rounded-lg p-3">
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">Learning Progress</span>
+                        <span className="text-grey-600">Learning Progress</span>
                         <span
                           className={`font-medium ${roadmap.progress === 100
                             ? "text-green-600"
@@ -554,7 +556,7 @@ const RoadmapDashboard = () => {
                               ? "text-blue-600"
                               : roadmap.progress > 0
                                 ? "text-yellow-600"
-                                : "text-gray-500"
+                                : "text-grey-500"
                             }`}
                         >
                           {roadmap.progress === 100
@@ -569,7 +571,7 @@ const RoadmapDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="px-6 py-3 bg-gray-50 border-t">
+                  <div className="px-6 py-3 bg-grey-50 border-t">
                     <button
                       onClick={() =>
                         router.push(`../courseroadmap?pageId=${roadmap.id}`)
@@ -592,13 +594,13 @@ const RoadmapDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Book className="text-gray-400" size={32} />
+              <div className="w-24 h-24 bg-grey-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Book className="text-grey-400" size={32} />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-grey-900 mb-2">
                 No roadmaps yet
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-grey-600 mb-4">
                 Start your learning journey by adding your first roadmap
               </p>
               <button

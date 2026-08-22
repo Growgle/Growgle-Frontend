@@ -625,7 +625,7 @@ export default function TrendsPage() {
                               <span
                                 className={`px-2 py-1 text-xs rounded-full ${
                                   news.category === "AI/ML"
-                                    ? "bg-purple-100 text-purple-700"
+                                    ? "bg-blue-100 text-blue-700"
                                     : news.category === "Cloud"
                                     ? "bg-blue-100 text-blue-700"
                                     : news.category === "Security"
@@ -638,7 +638,7 @@ export default function TrendsPage() {
                               <span
                                 className={`px-2 py-1 text-xs rounded-full ${
                                   news.impact === "High"
-                                    ? "bg-orange-100 text-orange-700"
+                                    ? "bg-red-100 text-red-700"
                                     : "bg-yellow-100 text-yellow-700"
                                 }`}
                               >
@@ -906,7 +906,7 @@ export default function TrendsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <BarChart3 className="h-5 w-5 mr-2 text-purple-600" />
+                      <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
                       Market Insights
                     </CardTitle>
                     <CardDescription>Key metrics and trends</CardDescription>
@@ -961,7 +961,7 @@ export default function TrendsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <Brain className="h-5 w-5 mr-2 text-pink-600" />
+                      <Brain className="h-5 w-5 mr-2 text-red-600" />
                       Emerging Technologies
                     </CardTitle>
                     <CardDescription>Technologies to watch</CardDescription>
