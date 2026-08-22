@@ -70,7 +70,6 @@ React.useEffect(() => {
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-50 via-white to-green-50 pt-16 pb-20 overflow-hidden">
-        {/* Background decoration */}
         <div className="absolute inset-0">
           <div className="absolute top-0 left-0 w-40 h-40 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
           <div className="absolute top-0 right-0 w-40 h-40 bg-yellow-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
@@ -103,45 +102,43 @@ React.useEffect(() => {
               className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
             >
               <Button size="lg" className="px-8 py-4" asChild>
-              <Link href="/skills" className="flex items-center gap-2 text-lg">
+              <Link href="/auth/signup" className="flex items-center gap-2 text-lg">
                 Get Started Free
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
 
               <Button variant="outlined" size="lg" className="text-lg px-8 py-4" asChild>
-                <Link href="/dashboard">
-                  View Demo
+                <Link href="/auth/login">
+                  Sign in
                 </Link>
               </Button>
             </motion.div>
 
-            {/* Stats */}
-            {/* Quote Carousel */}
-<motion.div
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.8, delay: 0.4 }}
-  className="mt-16 flex justify-center"
->
-  <div className="max-w-xl w-full text-center">
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={currentQuoteIndex}
-        initial={{ x: -50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: 100, opacity: 0 }}
-        transition={{ duration: 0.6 }}
-        className="italic text-gray-700 text-sm md:text-base font-light tracking-wide"
-      >
-  &ldquo;{quotes[currentQuoteIndex].text}&rdquo;
-        <span className="block mt-1 text-gray-500 text-xs md:text-sm font-medium">
-          {quotes[currentQuoteIndex].author}
-        </span>
-      </motion.div>
-    </AnimatePresence>
-  </div>
-</motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="mt-16 flex justify-center"
+            >
+              <div className="max-w-xl w-full text-center">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentQuoteIndex}
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: 100, opacity: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="italic text-gray-700 text-sm md:text-base font-light tracking-wide"
+                  >
+                    &ldquo;{quotes[currentQuoteIndex].text}&rdquo;
+                    <span className="block mt-1 text-gray-500 text-xs md:text-sm font-medium">
+                      {quotes[currentQuoteIndex].author}
+                    </span>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
 
 
           </div>
@@ -264,7 +261,7 @@ React.useEffect(() => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" className="text-lg px-8 py-4" asChild>
-                <Link href="/skills" className="flex items-center gap-2 text-lg">
+                <Link href="/auth/signup" className="flex items-center gap-2 text-lg">
                   Start Your Journey
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>

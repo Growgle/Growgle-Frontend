@@ -294,12 +294,15 @@ export default function CareersPage() {
 
     // Search query
     if (searchQuery) {
-      jobs = jobs.filter(
-        (job) =>
-          job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          job.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          job.location.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const q = searchQuery.toLowerCase().trim();
+      jobs = jobs.filter((job) => {
+        const title = String(job.title || "").toLowerCase();
+        const company = String(
+          job.company_name || job.company || ""
+        ).toLowerCase();
+        const location = String(job.location || "").toLowerCase();
+        return title.includes(q) || company.includes(q) || location.includes(q);
+      });
     }
 
     // Skills filter
@@ -478,7 +481,6 @@ export default function CareersPage() {
     <AuthGuard>
       <div className="min-h-screen bg-grey-50 py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -573,26 +575,35 @@ export default function CareersPage() {
             </Card>
           </motion.div>
 
-          {/* Search Bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="mb-6"
           >
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-grey-400" />
-                    <input
-                      type="text"
-                      placeholder="Search by job title, company, or location..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-grey-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+            <div className="bg-white border border-grey-200 rounded-xl p-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-grey-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by job title, company, or location..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full h-11 pl-10 pr-10 bg-grey-50 border border-grey-200 rounded-lg text-grey-900 placeholder:text-grey-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-400 hover:text-grey-700"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
                   <Button
                     variant={showSavedOnly ? "primary" : "outlined"}
                     onClick={() => setShowSavedOnly(!showSavedOnly)}
@@ -607,12 +618,12 @@ export default function CareersPage() {
                   {hasActiveFilters && (
                     <Button variant="ghost" onClick={clearAllFilters}>
                       <X className="h-4 w-4 mr-2" />
-                      Clear Filters
+                      Clear
                     </Button>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

@@ -16,6 +16,8 @@ export default function RootLayout({ children }) {
     pathname.endsWith("/auth/login") ||
     pathname.endsWith("/auth/signup") ||
     pathname.endsWith("/auth/forgot-password");
+  const isChat = pathname.startsWith("/explore");
+  const hideFooter = hideLayout || isChat;
 
   useEffect(() => {
     let cancelled = false;
@@ -70,12 +72,26 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body
+        className={
+          isChat
+            ? "h-dvh overflow-hidden bg-background font-sans antialiased"
+            : "min-h-screen bg-background font-sans antialiased"
+        }
+      >
         <AuthProvider>
-          <div className="relative flex min-h-screen flex-col">
+          <div
+            className={
+              isChat
+                ? "flex h-dvh flex-col overflow-hidden"
+                : "relative flex min-h-screen flex-col"
+            }
+          >
             {!hideLayout && <Header name={userName} email={userEmail} />}
-            <main className="flex-1">{children}</main>
-            {!hideLayout && <Footer />}
+            <main className={isChat ? "min-h-0 flex-1 overflow-hidden" : "flex-1"}>
+              {children}
+            </main>
+            {!hideFooter && <Footer />}
           </div>
         </AuthProvider>
       </body>

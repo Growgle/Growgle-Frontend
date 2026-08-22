@@ -231,7 +231,6 @@ const RoadmapDashboard = () => {
     <AuthGuard>
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="mx-20">
-          {/* Header */}
           <motion.div
             className="flex justify-between items-center mb-8"
             initial={{ opacity: 0, y: 20 }}

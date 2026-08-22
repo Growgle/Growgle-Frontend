@@ -8,9 +8,9 @@ import {
   Send,
   Search,
   MessageSquare,
-  Clock,
   Trash2,
-  Download,
+  SquarePen,
+  PanelLeft,
   Volume2,
   VolumeX,
   Globe,
@@ -19,8 +19,6 @@ import {
   FileText,
   Image as ImageIcon,
   ChevronDown,
-  ChevronLeft,
-  Plus,
   Sparkles,
   GraduationCap,
   Briefcase,
@@ -301,285 +299,177 @@ function ChatHistory({
   onNewSession,
   speaking,
   onStopSpeaking,
+  onToggleSidebar,
 }) {
-  const [filterMode, setFilterMode] = useState("all");
-  const [sortBy, setSortBy] = useState("date");
+  const [showSearch, setShowSearch] = useState(false);
+  const searchInputRef = useRef(null);
 
   const filteredSessions = sessions
     .filter((session) => {
-      const matchesSearch =
-        !searchHistory ||
-        session.title.toLowerCase().includes(searchHistory.toLowerCase()) ||
-        session.preview.toLowerCase().includes(searchHistory.toLowerCase());
-      const matchesMode = filterMode === "all" || session.mode === filterMode;
-      return matchesSearch && matchesMode;
+      if (!searchHistory) return true;
+      const q = searchHistory.toLowerCase();
+      return (
+        session.title?.toLowerCase().includes(q) ||
+        session.preview?.toLowerCase().includes(q)
+      );
     })
-    .sort((a, b) => {
-      if (sortBy === "date") return new Date(b.date) - new Date(a.date);
-      if (sortBy === "messages") return b.messageCount - a.messageCount;
-      return a.title.localeCompare(b.title);
-    });
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  const formatDate = (date) => {
-    const now = new Date();
-    const diff = now - new Date(date);
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days}d ago`;
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const getModeColor = (mode) => {
-    const modeData = MODES.find((m) => m.id === mode);
-    return modeData ? modeData.color : "from-gray-400 to-gray-500";
-  };
-
-  const exportSession = (session) => {
-    const content =
-      session.messages
-        ?.map((m) => `${m.role.toUpperCase()}: ${m.text}`)
-        .join("\n\n") || "No messages";
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${session.title.replace(/[^a-z0-9]/gi, "_")}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  useEffect(() => {
+    if (showSearch) searchInputRef.current?.focus();
+  }, [showSearch]);
 
   return (
-    <div className="h-full flex flex-col bg-white border-r border-gray-200">
-      {/* Header */}
-      <div className="p-5 border-b border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg flex items-center gap-2 text-gray-900">
-            <MessageSquare size={20} className="text-blue-600" />
-            Chats
-          </h3>
+    <div className="h-full w-72 flex flex-col bg-[#f0f4f9]">
+      <div className="px-3 pt-3 pb-2 flex items-center justify-between">
+        <span className="text-[15px] font-medium text-[#1f1f1f] px-2">Chats</span>
+        {onToggleSidebar && (
           <button
-            onClick={onNewSession}
-            className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-sm hover:shadow-md"
+            onClick={onToggleSidebar}
+            className="p-2 rounded-full text-[#444746] hover:bg-[#e1e5ea] transition-colors"
+            title="Close sidebar"
           >
-            New
-          </button>
-        </div>
-
-        {speaking && (
-          <button
-            onClick={onStopSpeaking}
-            className="w-full mb-4 px-4 py-2 text-sm font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
-          >
-            <VolumeX size={16} />
-            Stop Reading
+            <PanelLeft size={18} />
           </button>
         )}
-
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchHistory}
-            onChange={(e) => setSearchHistory(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 hover:bg-white"
-          />
-        </div>
-
-        {/* Filters */}
-        <div className="flex items-center gap-2">
-          <select
-            value={filterMode}
-            onChange={(e) => setFilterMode(e.target.value)}
-            className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-          >
-            <option value="all">All Modes</option>
-            {MODES.map((mode) => (
-              <option key={mode.id} value={mode.id}>
-                {mode.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-          >
-            <option value="date">Latest</option>
-            <option value="messages">Active</option>
-            <option value="title">A-Z</option>
-          </select>
-        </div>
       </div>
 
-      {/* Sessions List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="px-3 pb-2 space-y-1">
+        <button
+          onClick={onNewSession}
+          className="w-full inline-flex items-center gap-3 h-10 px-3 rounded-full text-sm font-medium text-[#1f1f1f] hover:bg-[#e1e5ea] transition-colors"
+        >
+          <SquarePen size={18} strokeWidth={1.75} />
+          New chat
+        </button>
+        <button
+          onClick={() => {
+            setShowSearch((v) => !v);
+            if (showSearch) setSearchHistory("");
+          }}
+          className={`w-full inline-flex items-center gap-3 h-10 px-3 rounded-full text-sm font-medium transition-colors ${
+            showSearch ? "bg-[#d3e3fd] text-[#041e49]" : "text-[#1f1f1f] hover:bg-[#e1e5ea]"
+          }`}
+        >
+          <Search size={18} strokeWidth={1.75} />
+          Search chats
+        </button>
+      </div>
+
+      {showSearch && (
+        <div className="px-3 pb-2">
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search chats"
+            value={searchHistory}
+            onChange={(e) => setSearchHistory(e.target.value)}
+            className="w-full h-10 px-4 text-sm rounded-full bg-white border-0 outline-none ring-1 ring-[#c4c7c5] focus:ring-2 focus:ring-[#0b57d0] text-[#1f1f1f] placeholder:text-[#444746]"
+          />
+        </div>
+      )}
+
+      {speaking && (
+        <div className="px-3 pb-2">
+          <button
+            onClick={onStopSpeaking}
+            className="w-full h-9 rounded-full text-sm font-medium bg-[#fce8e6] text-[#c5221f] hover:bg-[#f9d7d4] inline-flex items-center justify-center gap-2"
+          >
+            <VolumeX size={14} />
+            Stop reading
+          </button>
+        </div>
+      )}
+
+      <div className="px-5 pt-3 pb-1 text-xs font-medium text-[#444746]">
+        Recents
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-2 pb-3">
         {filteredSessions.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            <MessageSquare size={48} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm font-medium mb-1">No conversations yet</p>
-            <p className="text-xs text-gray-400">
-              {searchHistory
-                ? "Try adjusting your search"
-                : "Start a new chat to begin"}
-            </p>
-          </div>
+          <p className="px-3 py-6 text-sm text-[#444746]">
+            {searchHistory ? "No matching chats" : "No recent chats"}
+          </p>
         ) : (
-          <div>
-            {filteredSessions.map((session) => (
-              <div
-                key={session.id}
-                className={`px-5 py-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-all duration-200 ${currentSessionId === session.id
-                  ? "bg-blue-50 border-l-4 border-l-blue-600"
-                  : ""
-                  }`}
-                onClick={() => onLoadSession(session.id)}
+          filteredSessions.map((session) => (
+            <div
+              key={session.id}
+              className={`group flex items-center gap-1 rounded-full cursor-pointer transition-colors ${
+                currentSessionId === session.id
+                  ? "bg-[#d3e3fd]"
+                  : "hover:bg-[#e1e5ea]"
+              }`}
+              onClick={() => onLoadSession(session.id)}
+            >
+              <p className="flex-1 min-w-0 px-3 py-2 text-sm text-[#1f1f1f] truncate">
+                {session.title}
+              </p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteSession(session.id);
+                }}
+                className="opacity-0 group-hover:opacity-100 p-1.5 mr-1 rounded-full text-[#444746] hover:bg-white/70 transition-opacity"
+                title="Delete"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-medium text-sm text-gray-900 line-clamp-2 flex-1 pr-2">
-                    {session.title}
-                  </h4>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        exportSession(session);
-                      }}
-                      className="p-1.5 hover:bg-gray-200 rounded-lg text-gray-400 hover:text-gray-700 transition-colors"
-                      title="Export"
-                    >
-                      <Download size={14} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteSession(session.id);
-                      }}
-                      className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 mb-2">
-                  {(() => {
-                    const modeData = MODES.find((m) => m.id === session.mode);
-                    const ModeSessionIcon = modeData?.icon;
-                    return (
-                      <span
-                        className={`text-xs px-2.5 py-1 rounded-full bg-gradient-to-r ${getModeColor(
-                          session.mode
-                        )} text-white font-medium flex items-center gap-1`}
-                      >
-                        {ModeSessionIcon && <ModeSessionIcon size={12} />}
-                        {modeData?.label}
-                      </span>
-                    );
-                  })()}
-                  <span className="text-xs text-gray-500 flex items-center gap-1">
-                    <Clock size={11} />
-                    {formatDate(session.date)}
-                  </span>
-                </div>
-
-                <p className="text-xs text-gray-600 line-clamp-2 mb-2">
-                  {session.preview}
-                </p>
-
-                <div className="text-xs text-gray-500 font-medium">
-                  {session.messageCount} messages
-                </div>
-              </div>
-            ))}
-          </div>
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))
         )}
       </div>
     </div>
   );
 }
 
-function SuggestionCards({ mode, suggestions, onSuggestionClick }) {
+function SuggestionCards({ mode, suggestions, onSuggestionClick, firstName }) {
   const currentMode = MODES.find((m) => m.id === mode);
   const ModeIcon = currentMode.icon;
 
   return (
-    <div className="max-w-5xl mx-auto px-4">
-      {/* Mode Header */}
+    <div className="max-w-2xl mx-auto px-4 w-full">
       <motion.div
-        className="text-center mb-12"
-        initial={{ opacity: 0, y: 20 }}
+        className="text-center mb-10"
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
       >
-        <motion.div
-          className={`inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-r ${currentMode.color} text-white mb-6 shadow-xl`}
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
-        >
-          <ModeIcon size={36} strokeWidth={1.5} />
-        </motion.div>
-        <h2 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
-          {currentMode.label} Mode
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#4285f4] via-[#34a853] to-[#fbbc04] p-[2px]">
+          <div className="flex h-full w-full items-center justify-center rounded-full bg-white">
+            <ModeIcon size={22} className="text-[#1967d2]" strokeWidth={1.75} />
+          </div>
+        </div>
+        <h2 className="text-3xl sm:text-[2.5rem] font-light text-[#1f1f1f] tracking-tight">
+          {firstName ? `Hi ${firstName}, what's next?` : "Hi, what's next?"}
         </h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+        <p className="mt-2 text-[#444746]">
           {currentMode.desc}
         </p>
       </motion.div>
 
-      {/* Suggestion Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {suggestions.map((suggestion, idx) => {
           const SuggestionIcon = suggestion.icon;
           return (
-            <motion.div
+            <motion.button
               key={idx}
-              initial={{ opacity: 0, y: 30 }}
+              type="button"
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
+              transition={{ duration: 0.3, delay: idx * 0.05 }}
               onClick={() => onSuggestionClick(suggestion)}
-              className="group relative glass-card rounded-2xl p-6 cursor-pointer hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 overflow-hidden"
-              whileHover={{ y: -4, scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              className="group text-left rounded-2xl border border-[#e8eaed] bg-white p-4 hover:bg-[#f8f9fa] hover:border-[#dadce0] transition-colors"
             >
-              {/* Gradient overlay on hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${currentMode.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl`} />
-
-              <div className="relative flex items-start gap-4">
-                {/* Icon Container */}
-                <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${currentMode.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}>
-                  <SuggestionIcon size={22} strokeWidth={1.5} />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">
-                    {suggestion.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-                    {suggestion.prompt}
-                  </p>
-                </div>
+              <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#e8f0fe] text-[#1967d2]">
+                <SuggestionIcon size={16} strokeWidth={1.75} />
               </div>
-
-              {/* Try this button */}
-              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                <span className="text-sm text-blue-600 font-medium flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-full">
-                  Try this <ArrowRight size={14} />
-                </span>
-              </div>
-            </motion.div>
+              <h3 className="font-medium text-[#202124] mb-1">
+                {suggestion.title}
+              </h3>
+              <p className="text-sm text-[#5f6368] line-clamp-2 leading-relaxed">
+                {suggestion.prompt}
+              </p>
+            </motion.button>
           );
         })}
       </div>
@@ -632,8 +522,8 @@ function MessageBubble({ m, onSpeakMessage, setTyping }) {
               <span>From {getLanguageName(m.detectedLanguage)}</span>
             </div>
           )}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-2xl rounded-br-md shadow-md">
-            <div className="whitespace-pre-wrap break-words">
+          <div className="bg-[#e8f0fe] text-[#202124] px-4 py-3 rounded-[22px] rounded-br-md">
+            <div className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">
               {displayText}
             </div>
             {m.files &&
@@ -669,52 +559,52 @@ function MessageBubble({ m, onSpeakMessage, setTyping }) {
     const aiWasTranslated = m.translatedText && m.translatedText !== m.text;
 
     return (
-      <div className="flex mb-4">
-        <div className="max-w-[85%] md:max-w-[60%]">
-          <div className="bg-white border border-gray-200 p-4 rounded-2xl rounded-bl-md shadow-md">
-            {aiWasTranslated && (
-              <div className="flex items-center justify-between gap-2 text-xs text-gray-500 mb-2 pb-2 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Languages size={13} />
-                  <span>Translated to {getLanguageName(m.detectedLanguage)}</span>
-                </div>
-                <button
-                  onClick={() => setShowTranslated(!showTranslated)}
-                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                >
-                  {showTranslated ? "Hide English" : "Show English"}
-                </button>
+      <div className="flex mb-6">
+        <div className="max-w-3xl w-full">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5 h-8 w-8 rounded-full bg-gradient-to-br from-[#4285f4] via-[#34a853] to-[#fbbc04] p-[2px]">
+              <div className="flex h-full w-full items-center justify-center rounded-full bg-white">
+                <Sparkles size={14} className="text-[#1967d2]" />
               </div>
-            )}
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold">
-                AI
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="whitespace-pre-wrap break-words text-gray-800">
-                  {displayText}
-                </div>
-                {aiWasTranslated && showTranslated && m.translatedText && (
-                  <div className="text-xs mt-3 pt-3 text-gray-600 border-t border-gray-200 bg-blue-50 p-3 rounded-lg">
-                    <span className="font-medium text-gray-700">English:</span> {m.translatedText}
+            </div>
+            <div className="flex-1 min-w-0 pt-1">
+              {aiWasTranslated && (
+                <div className="flex items-center justify-between gap-2 text-xs text-[#5f6368] mb-2">
+                  <div className="flex items-center gap-2">
+                    <Languages size={13} />
+                    <span>Translated to {getLanguageName(m.detectedLanguage)}</span>
                   </div>
-                )}
+                  <button
+                    onClick={() => setShowTranslated(!showTranslated)}
+                    className="text-[#1967d2] font-medium"
+                  >
+                    {showTranslated ? "Hide English" : "Show English"}
+                  </button>
+                </div>
+              )}
+              <div className="whitespace-pre-wrap break-words text-[#202124] text-[15px] leading-7">
+                {displayText}
               </div>
+              {aiWasTranslated && showTranslated && m.translatedText && (
+                <div className="text-sm mt-3 text-[#5f6368] bg-[#f8f9fa] p-3 rounded-xl">
+                  <span className="font-medium text-[#202124]">English:</span> {m.translatedText}
+                </div>
+              )}
               <button
                 onClick={() => onSpeakMessage(m.text)}
-                className="flex-shrink-0 p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                className="mt-2 p-1.5 text-[#5f6368] hover:text-[#1967d2] hover:bg-[#e8f0fe] rounded-full transition-colors"
                 title="Read aloud"
               >
-                <Volume2 size={18} />
+                <Volume2 size={16} />
               </button>
+              {m.files && m.files.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {m.files.map((f, i) => (
+                    <AttachmentPreview key={i} f={f} />
+                  ))}
+                </div>
+              )}
             </div>
-            {m.files && m.files.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                {m.files.map((f, i) => (
-                  <AttachmentPreview key={i} f={f} />
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -783,6 +673,7 @@ export default function ChatPage() {
   const [showModeDropdown, setShowModeDropdown] = useState(false);
   const [showHistory, setShowHistory] = useState(false); // Hidden by default, shown on larger screens
   const [isMobile, setIsMobile] = useState(false);
+  const [firstName, setFirstName] = useState("");
 
   const inputRef = useRef();
   const messagesRef = useRef(null);
@@ -804,6 +695,8 @@ export default function ChatPage() {
 
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
+    const name = localStorage.getItem("userName") || "";
+    setFirstName(name.split(" ")[0] || "");
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
@@ -1203,63 +1096,67 @@ export default function ChatPage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
-        <div className="h-screen flex relative">
+      <div className="h-full bg-[#f8f9fa]">
+        <div className="h-full flex relative">
           {/* Mobile Overlay Backdrop */}
-          {showHistory && isMobile && (
-            <div
-              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          {isMobile && showHistory && (
+            <button
+              type="button"
+              className="fixed inset-0 bg-black/20 z-40 md:hidden"
               onClick={() => setShowHistory(false)}
+              aria-label="Close sidebar"
             />
           )}
 
-          {/* Left Sidebar - Chat History */}
-          <AnimatePresence>
-            {showHistory && (
-              <motion.div
-                initial={{ x: isMobile ? -320 : 0, opacity: isMobile ? 0 : 1 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -320, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50' : 'relative flex-shrink-0'} w-80 max-w-[85vw]`}
-              >
-                <ChatHistory
-                  sessions={chatSessions}
-                  currentSessionId={currentSessionId}
-                  searchHistory={searchHistory}
-                  setSearchHistory={setSearchHistory}
-                  onLoadSession={(id) => {
-                    loadSession(id);
-                    if (isMobile) setShowHistory(false);
-                  }}
-                  onDeleteSession={deleteSession}
-                  onNewSession={() => {
-                    createNewSession();
-                    if (isMobile) setShowHistory(false);
-                  }}
-                  speaking={speaking}
-                  onStopSpeaking={stopSpeaking}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <motion.aside
+            initial={false}
+            animate={
+              isMobile
+                ? { width: 288, x: showHistory ? 0 : -288 }
+                : { width: showHistory ? 288 : 0, x: 0 }
+            }
+            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+            className={`${
+              isMobile ? "fixed left-0 top-0 bottom-0 z-50" : "relative"
+            } h-full flex-shrink-0 overflow-hidden ${
+              isMobile && !showHistory ? "pointer-events-none" : ""
+            }`}
+          >
+            <ChatHistory
+              sessions={chatSessions}
+              currentSessionId={currentSessionId}
+              searchHistory={searchHistory}
+              setSearchHistory={setSearchHistory}
+              onLoadSession={(id) => {
+                loadSession(id);
+                if (isMobile) setShowHistory(false);
+              }}
+              onDeleteSession={deleteSession}
+              onNewSession={() => {
+                createNewSession();
+                if (isMobile) setShowHistory(false);
+              }}
+              speaking={speaking}
+              onStopSpeaking={stopSpeaking}
+              onToggleSidebar={() => setShowHistory(false)}
+            />
+          </motion.aside>
 
-          {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col min-w-0">
-            {/* Toggle History Button */}
-            <div className="bg-white border-b border-gray-200 px-3 md:px-4 py-2 flex items-center">
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                title={showHistory ? "Hide history" : "Show history"}
-              >
-                {showHistory ? <ChevronLeft size={20} /> : <MessageSquare size={20} />}
-              </button>
+          <div className="flex-1 flex flex-col min-w-0 bg-[#f8f9fa]">
+            <div className="px-3 md:px-5 py-2 flex items-center">
+              {!showHistory && (
+                <button
+                  onClick={() => setShowHistory(true)}
+                  className="p-2 text-[#444746] hover:bg-[#e8eaed] rounded-full transition-colors"
+                  title="Open sidebar"
+                >
+                  <PanelLeft size={20} />
+                </button>
+              )}
             </div>
-            {/* Messages */}
             <div
               ref={messagesRef}
-              className="flex-1 overflow-y-auto px-4 py-4 bg-white"
+              className="flex-1 overflow-y-auto px-4 py-2"
             >
               {messages.length === 0 && showSuggestions ? (
                 <div className="h-full flex items-center justify-center">
@@ -1267,10 +1164,11 @@ export default function ChatPage() {
                     mode={mode}
                     suggestions={MODE_SUGGESTIONS[mode]}
                     onSuggestionClick={handleSuggestionClick}
+                    firstName={firstName}
                   />
                 </div>
               ) : (
-                <div className="mx-auto">
+                <div className="mx-auto max-w-3xl">
                   {messages.map((m, idx) => (
                     <MessageBubble
                       key={idx}
@@ -1281,27 +1179,22 @@ export default function ChatPage() {
                   ))}
 
                   {aiLoading && loadingSessionId === currentSessionId && (
-                    <div className="flex mb-4">
-                      <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-md shadow-md p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                          </div>
-                          <div className="flex gap-1.5">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div
-                              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                              style={{ animationDelay: "0.1s" }}
-                            ></div>
-                            <div
-                              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                              style={{ animationDelay: "0.2s" }}
-                            ></div>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            AI is thinking...
-                          </span>
+                    <div className="flex mb-6 items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#4285f4] via-[#34a853] to-[#fbbc04] p-[2px]">
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-white">
+                          <Sparkles size={14} className="text-[#1967d2] animate-pulse" />
                         </div>
+                      </div>
+                      <div className="flex gap-1.5">
+                        <div className="w-1.5 h-1.5 bg-[#5f6368] rounded-full animate-bounce"></div>
+                        <div
+                          className="w-1.5 h-1.5 bg-[#5f6368] rounded-full animate-bounce"
+                          style={{ animationDelay: "0.1s" }}
+                        ></div>
+                        <div
+                          className="w-1.5 h-1.5 bg-[#5f6368] rounded-full animate-bounce"
+                          style={{ animationDelay: "0.2s" }}
+                        ></div>
                       </div>
                     </div>
                   )}
@@ -1310,8 +1203,8 @@ export default function ChatPage() {
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-gray-200 bg-gray-50/50 p-6">
-              <div className="max-w-4xl mx-auto">
+            <div className="px-4 pb-5 pt-2 bg-[#f8f9fa]">
+              <div className="max-w-3xl mx-auto">
                 {/* Translation indicators */}
                 {detectedLang && (
                   <div className="mb-3 flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 px-4 py-2.5 rounded-lg border border-emerald-200">
@@ -1352,39 +1245,34 @@ export default function ChatPage() {
                   </div>
                 )}
 
-                {/* Input row */}
-                <div className="flex gap-3">
-                  {/* Mode Selector Dropdown */}
+                <div className="flex items-end gap-2 rounded-[28px] border border-[#dadce0] bg-white px-2 py-2 shadow-[0_1px_6px_rgba(32,33,36,0.08)] focus-within:border-[#1a73e8] focus-within:shadow-[0_1px_8px_rgba(26,115,232,0.18)]">
                   <div className="relative" ref={modeDropdownRef}>
                     {(() => {
                       const CurrentModeIcon = currentModeData.icon;
                       return (
-                        <motion.button
+                        <button
                           onClick={() => setShowModeDropdown(!showModeDropdown)}
-                          className={`h-14 px-5 rounded-xl border-0 transition-all duration-200 flex items-center gap-2.5 font-medium text-sm shadow-lg hover:shadow-xl bg-gradient-to-r ${currentModeData.color} text-white`}
+                          className="h-10 px-3 rounded-full text-[#1967d2] bg-[#e8f0fe] hover:bg-[#d2e3fc] transition-colors flex items-center gap-1.5 text-sm font-medium"
                           title="Select mode"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
                         >
-                          <CurrentModeIcon size={20} strokeWidth={1.5} />
+                          <CurrentModeIcon size={16} strokeWidth={1.75} />
                           <span className="hidden sm:inline">{currentModeData.label}</span>
                           <ChevronDown
-                            size={16}
-                            className={`transition-transform duration-200 ${showModeDropdown ? "rotate-180" : ""
-                              }`}
+                            size={14}
+                            className={`transition-transform ${showModeDropdown ? "rotate-180" : ""}`}
                           />
-                        </motion.button>
+                        </button>
                       );
                     })()}
 
                     <AnimatePresence>
                       {showModeDropdown && (
                         <motion.div
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          initial={{ opacity: 0, y: 8, scale: 0.98 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          transition={{ duration: 0.2 }}
-                          className="absolute bottom-full mb-2 left-0 w-72 glass-card rounded-2xl shadow-2xl py-2 z-50 max-h-96 overflow-y-auto"
+                          exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute bottom-full mb-2 left-0 w-72 bg-white rounded-2xl shadow-xl border border-[#e8eaed] py-2 z-50 max-h-96 overflow-y-auto"
                         >
                           {MODES.map((m) => {
                             const ModeItemIcon = m.icon;
@@ -1398,20 +1286,20 @@ export default function ChatPage() {
                                     createNewSession();
                                   }
                                 }}
-                                className={`w-full px-4 py-3 text-left hover:bg-gray-50/80 transition-all duration-200 flex items-start gap-3 ${mode === m.id ? "bg-blue-50/80" : ""
+                                className={`w-full px-4 py-3 text-left hover:bg-[#f8f9fa] transition-colors flex items-start gap-3 ${mode === m.id ? "bg-[#e8f0fe]" : ""
                                   }`}
                               >
-                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${m.color} flex items-center justify-center text-white shadow-md`}>
-                                  <ModeItemIcon size={18} strokeWidth={1.5} />
+                                <div className="w-9 h-9 rounded-full bg-[#e8f0fe] flex items-center justify-center text-[#1967d2]">
+                                  <ModeItemIcon size={16} strokeWidth={1.75} />
                                 </div>
                                 <div className="flex-1">
                                   <div
-                                    className={`font-semibold text-sm mb-0.5 ${mode === m.id ? "text-blue-700" : "text-gray-900"
+                                    className={`font-medium text-sm mb-0.5 ${mode === m.id ? "text-[#1967d2]" : "text-[#202124]"
                                       }`}
                                   >
                                     {m.label}
                                   </div>
-                                  <div className="text-xs text-gray-500">{m.desc}</div>
+                                  <div className="text-xs text-[#5f6368]">{m.desc}</div>
                                 </div>
                               </button>
                             );
@@ -1433,14 +1321,14 @@ export default function ChatPage() {
                         }
                       }}
                       disabled={typing || aiLoading}
-                      placeholder={`Ask anything in ${currentModeData.label} mode...`}
-                      className="w-full resize-none p-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                      placeholder={`Ask anything...`}
+                      className="w-full resize-none py-2.5 px-2 pr-10 rounded-2xl border-0 focus:ring-0 outline-none disabled:opacity-50 disabled:cursor-not-allowed bg-transparent text-[15px] text-[#202124] placeholder:text-[#80868b]"
                       rows={1}
-                      style={{ minHeight: "56px", maxHeight: "120px" }}
+                      style={{ minHeight: "40px", maxHeight: "120px" }}
                     />
 
-                    <label className="absolute right-3 top-3 cursor-pointer p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
-                      <Upload size={20} />
+                    <label className="absolute right-1 top-1.5 cursor-pointer p-1.5 text-[#5f6368] hover:text-[#1967d2] hover:bg-[#e8f0fe] rounded-full transition-colors">
+                      <Upload size={16} />
                       <input
                         type="file"
                         accept="application/pdf,image/*"
@@ -1450,19 +1338,19 @@ export default function ChatPage() {
                     </label>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-1 pb-0.5">
                     <button
                       onClick={() =>
                         listening ? stopListening() : startListening()
                       }
                       disabled={aiLoading}
-                      className={`p-4 rounded-xl font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg ${listening
-                        ? "bg-red-500 text-white"
-                        : "bg-white border-2 border-gray-200 text-gray-600 hover:border-blue-500 hover:text-blue-600"
+                      className={`p-2.5 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${listening
+                        ? "bg-[#d93025] text-white"
+                        : "text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#1967d2]"
                         }`}
                       title={listening ? "Stop listening" : "Start voice input"}
                     >
-                      {listening ? <MicOff size={20} /> : <Mic size={20} />}
+                      {listening ? <MicOff size={18} /> : <Mic size={18} />}
                     </button>
 
                     <button
@@ -1470,23 +1358,17 @@ export default function ChatPage() {
                       disabled={
                         aiLoading || typing || (!input && !filePreview)
                       }
-                      className={`px-6 py-4 rounded-xl font-medium text-white transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r ${currentModeData.color}`}
+                      className="h-10 w-10 rounded-full bg-[#1a73e8] text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1765cc]"
                       title="Send message"
                     >
-                      <Send size={20} />
+                      <Send size={16} />
                     </button>
                   </div>
                 </div>
 
-                <div className="mt-3 text-xs text-gray-500 text-center">
-                  Press{" "}
-                  <kbd className="px-2 py-1 bg-gray-200 rounded">Enter</kbd> to
-                  send,{" "}
-                  <kbd className="px-2 py-1 bg-gray-200 rounded">
-                    Shift + Enter
-                  </kbd>{" "}
-                  for new line
-                </div>
+                <p className="mt-2 text-[11px] text-[#80868b] text-center">
+                  Enter to send · Shift + Enter for a new line
+                </p>
               </div>
             </div>
           </div>

@@ -75,8 +75,8 @@ export default function Header(props) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 w-full border-b border-[#e8eaed] bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
@@ -105,10 +105,10 @@ export default function Header(props) {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center space-x-2",
+                    "px-3.5 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center space-x-2",
                     isActive
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      ? "bg-[#e8f0fe] text-[#1967d2]"
+                      : "text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -130,8 +130,8 @@ export default function Header(props) {
                   className={cn(
                     "inline-flex items-center justify-center p-2 rounded-lg transition-all duration-200",
                     userMenuOpen
-                      ? "bg-blue-50 text-blue-600 shadow-sm"
-                      : "hover:bg-gray-100 text-gray-600"
+                      ? "bg-[#e8f0fe] text-[#1967d2] shadow-sm"
+                      : "hover:bg-[#f1f3f4] text-[#5f6368]"
                   )}
                 >
                   <User className="h-5 w-5" />
@@ -230,10 +230,10 @@ export default function Header(props) {
                       key={item.name}
                       href={item.href}
                       className={cn(
-                        "px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center space-x-2",
+                        "px-3 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center space-x-2",
                         isActive
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          ? "bg-[#e8f0fe] text-[#1967d2]"
+                          : "text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
                       )}
                       onClick={() => setIsOpen(false)}
                     >

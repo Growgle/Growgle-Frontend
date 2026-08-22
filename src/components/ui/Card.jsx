@@ -9,7 +9,6 @@ const Card = React.forwardRef(({ className, children, ...props }, ref) => (
       "rounded-xl border border-grey-200 bg-white shadow-sm hover:shadow-md transition-shadow duration-200",
       className
     )}
-    whileHover={{ y: -2 }}
     transition={{ duration: 0.2 }}
     {...props}
   >
